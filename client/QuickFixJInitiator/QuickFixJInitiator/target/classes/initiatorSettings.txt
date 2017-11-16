@@ -1,0 +1,23 @@
+#default settings for sessions
+[DEFAULT]#This will applies to all sessions
+ConnectionType=initiator
+LogonTimeout=30
+ReconnectInterval=5
+ResetOnLogon=Y
+FileLogPath=./Client_Logs
+SenderCompID=HSBC
+ValidateIncomingMessage=N
+[SESSION]#A single session
+BeginString=FIX.4.2
+TargetCompID=ALGO-EXCHANGE
+StartDay=sunday
+EndDay=friday
+StartTime=00:00:00
+EndTime=00:00:00
+HeartBtInt=5
+CheckLatency=N
+SocketConnectPort=12000
+SocketConnectHost=192.168.16.212
+UseDataDictionary=Y
+DataDictionary=./FIX42.xml
+FileStorePath=./Client_Seq_Store

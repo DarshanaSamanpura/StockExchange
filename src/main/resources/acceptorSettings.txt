@@ -1,0 +1,22 @@
+#default settings for sessions
+[DEFAULT]    # ——-> This will applies to all sessions
+ConnectionType=acceptor
+ResetOnLogon=Y
+FileLogPath=./Server_Logs
+ReconnectInterval=6030
+ValidateIncomingMessage=N
+[SESSION] #A single session
+BeginString=FIX.4.2
+#SenderCompID=MY-ACCEPTOR-SERVICE
+#TargetCompID=MY-INITIATOR-CLIENT1
+SenderCompID=ALGO-EXCHANGE
+TargetCompID=HSBC
+StartDay=sunday
+EndDay=friday
+StartTime=00:00:00
+EndTime=00:00:00
+CheckLatency=N
+SocketAcceptPort=12000
+UseDataDictionary=Y
+DataDictionary=./FIX42.xml
+FileStorePath=./Server_Seq_Store
