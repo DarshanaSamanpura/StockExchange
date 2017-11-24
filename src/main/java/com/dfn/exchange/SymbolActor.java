@@ -10,11 +10,14 @@ import com.dfn.exchange.beans.OrderEntity;
 import com.google.gson.Gson;
 import org.apache.log4j.LogManager;
 import org.apache.log4j.Logger;
+import org.hibernate.internal.CriteriaImpl;
 import quickfix.FieldNotFound;
 import quickfix.SessionID;
 import quickfix.field.*;
 import quickfix.fix42.ExecutionReport;
 import quickfix.fix42.NewOrderSingle;
+import quickfix.fix42.OrderCancelReplaceRequest;
+import quickfix.fix42.OrderCancelRequest;
 
 import java.text.SimpleDateFormat;
 import java.util.*;
@@ -36,7 +39,7 @@ public class SymbolActor extends UntypedActor {
     private Map<String, SessionID> orderSessions = new HashMap<>();
     private long orderEntryTime;
 
-    public SymbolActor(String symbolName, ActorRef fixHander, ActorRef feedHander){
+    public SymbolActor(String symbolName, ActorRef fixHander, ActorRef feedHander) {
         this.symbolName = symbolName;
         this.fixHandler = fixHander;
         this.feedHandler = feedHander;
@@ -53,21 +56,74 @@ public class SymbolActor extends UntypedActor {
     @Override
     public void onReceive(Object message) throws Exception {
 
-        if(message instanceof InMessageFix){
-            InMessageFix input = (InMessageFix)message;
-            if(input.getFixMessage() instanceof NewOrderSingle){
+        if (message instanceof InMessageFix) {
+            InMessageFix input = (InMessageFix) message;
+            if (input.getFixMessage() instanceof NewOrderSingle) {
                 orderEntryTime = System.currentTimeMillis();
-                NewOrderSingle newOrder = (NewOrderSingle)input.getFixMessage();
-                saveOrder(newOrder,input.getSessionID().getTargetCompID());
-                orderSessions.put(newOrder.getClOrdID().getValue(),input.getSessionID());
+                NewOrderSingle newOrder = (NewOrderSingle) input.getFixMessage();
+                saveOrder(newOrder, input.getSessionID().getTargetCompID());
+                orderSessions.put(newOrder.getClOrdID().getValue(), input.getSessionID());
 
-                if(newOrder.getOrdType().getValue() == OrdType.LIMIT){
+                if (newOrder.getOrdType().getValue() == OrdType.LIMIT) {
+                    if (newOrder.getSide().getValue() == Side.BUY) { // if new Order is Buy get the matching sell orders.
+                        OrderEntity newBuyOrder = orderDao.getOrder(newOrder.getClOrdID().getValue());
+                        List<OrderEntity> sellOrders = orderDao.getMatchingSellLimitOrders(this.symbolName, newOrder.getPrice().getValue());
+                        if (sellOrders != null && sellOrders.size() > 0) {
+                            matchLimitOrders(newBuyOrder, sellOrders);
+                        }
+                    } else{
+                        OrderEntity newSellOrder = orderDao.getOrder(newOrder.getClOrdID().getValue());
+                        List<OrderEntity> buyOrders = orderDao.getMatchingBuyLimitOrders(this.symbolName, newOrder.getPrice().getValue());
+                        if (buyOrders != null && buyOrders.size() > 0) {
+                            matchLimitOrders(newSellOrder, buyOrders);
+                        }
+                    }
+
                     List<OrderEntity> buyOrders = orderDao.getBuyLimitOrders(this.symbolName);
                     List<OrderEntity> sellOrders = orderDao.getSellLimitOrders(this.symbolName);
-                    transmitOrderBook(buyOrders,sellOrders);
-                    matchLimitOrders(buyOrders,sellOrders);
-                }else {
+                    transmitOrderBook(buyOrders, sellOrders);
+                    // matchLimitOrders(buyOrders,sellOrders);
+                } else {
                     matchMarketOrder(newOrder);
+                }
+
+            } else if (input.getFixMessage() instanceof OrderCancelRequest) {
+
+            } else if(input.getFixMessage() instanceof OrderCancelReplaceRequest){
+                OrderCancelReplaceRequest amendOrder = (OrderCancelReplaceRequest) input.getFixMessage();
+                OrderEntity modifiedOrder = orderDao.getOrder(amendOrder.getClOrdID().getValue());
+                modifiedOrder.setRemainingQty(modifiedOrder.getRemainingQty() + amendOrder.getOrderQty().getValue() - modifiedOrder.getQty());
+                modifiedOrder.setPrice(amendOrder.getPrice().getValue());
+                modifiedOrder.setQty(amendOrder.getOrderQty().getValue());
+                modifiedOrder.setOrdSide(amendOrder.getSide().getValue());
+                modifiedOrder.setOrdType(amendOrder.getOrdType().getValue());
+
+                orderDao.updateOrder(amendOrder.getClOrdID().getValue(), modifiedOrder.getQty(), modifiedOrder.getRemainingQty(), modifiedOrder.getPrice(), String.valueOf(modifiedOrder.getOrdType()), String.valueOf(modifiedOrder.getOrdSide()));
+
+                if (amendOrder.getOrdType().getValue() == OrdType.LIMIT) {
+                    if (amendOrder.getSide().getValue() == Side.BUY) { // if new Order is Buy get the matching sell orders.
+                        List<OrderEntity> sellOrders = orderDao.getMatchingSellLimitOrders(this.symbolName, modifiedOrder.getPrice());
+                        if (sellOrders != null && sellOrders.size() > 0) {
+                            matchLimitOrders(modifiedOrder, sellOrders);
+                        }
+                    } else{
+                        List<OrderEntity> buyOrders = orderDao.getMatchingBuyLimitOrders(this.symbolName, modifiedOrder.getPrice());
+                        if (buyOrders != null && buyOrders.size() > 0) {
+                            matchLimitOrders(modifiedOrder, buyOrders);
+                        }
+                    }
+
+                    List<OrderEntity> buyOrders = orderDao.getBuyLimitOrders(this.symbolName);
+                    List<OrderEntity> sellOrders = orderDao.getSellLimitOrders(this.symbolName);
+                    transmitOrderBook(buyOrders, sellOrders);
+                    // matchLimitOrders(buyOrders,sellOrders);
+                } else {
+                    NewOrderSingle modifiedSingleOrder = new NewOrderSingle();
+                    modifiedSingleOrder.set(new ClOrdID(modifiedOrder.getOrderId()));
+                    modifiedSingleOrder.set(new Symbol(modifiedOrder.getSymbol()));
+                    modifiedSingleOrder.set(new Price(modifiedOrder.getPrice()));
+                    modifiedSingleOrder.set(new OrderQty(modifiedOrder.getQty()));
+                    matchMarketOrder(modifiedSingleOrder);
                 }
 
             }
@@ -76,155 +132,9 @@ public class SymbolActor extends UntypedActor {
     }
 
 
-    private void matchMarketOrder(NewOrderSingle orderSingle) throws FieldNotFound{
+    private void matchLimitOrders(OrderEntity newOrder, List<OrderEntity> counterOrderList) throws FieldNotFound {
 
-
-
-        if(orderSingle.getSide().getValue() == Side.BUY){
-
-            List<OrderEntity> limitSellOrders = orderDao.getSellLimitOrders(orderSingle.getSymbol().getValue());
-            matchMktBuyOrder(orderSingle,limitSellOrders);
-
-        }else if(orderSingle.getSide().getValue() == Side.SELL){
-
-            List<OrderEntity> limitBuyOrders = orderDao.getBuyLimitOrders(orderSingle.getSymbol().getValue());
-            matchMktSellOrder(orderSingle,limitBuyOrders);
-
-        }else {
-
-            logger.info("Unknown Order Type " + orderSingle.getSide().getValue());
-
-        }
-
-
-
-    }
-
-    private void matchMktBuyOrder(NewOrderSingle mktOrder, List<OrderEntity> limitSellOrders) throws FieldNotFound{
-
-        double orderQty = mktOrder.getOrderQty().getValue();
-        double remainingQty = mktOrder.getOrderQty().getValue();
-
-        for(OrderEntity entity : limitSellOrders){
-
-            if(entity.getRemainingQty() == orderQty){
-                String executionId = ExecutionCounter.getTradeExecutionId(symbolName);
-                fillOrder(entity,executionId);
-                OrderEntity x = orderDao.getOrder(mktOrder.getClOrdID().getValue());
-                x.setPrice(entity.getPrice());
-                fillOrder(x, executionId);
-                orderDao.updateTradeMatch(executionId, orderQty, entity.getPrice(), entity.getOrderId(), x.getOrderId());
-                orderDao.addOrderExecution(executionId, entity.getOrderId(), orderQty, entity.getPrice());
-                orderDao.addOrderExecution(executionId, x.getOrderId(), orderQty, entity.getPrice());
-                long time = System.currentTimeMillis() - orderEntryTime;
-                System.out.println("******** MATCHING TIME " + time + " ms ********");
-                break;
-            }else if(entity.getRemainingQty() > remainingQty){
-                // mkt order is filling
-                String executionId = ExecutionCounter.getTradeExecutionId(symbolName);
-                OrderEntity mktOrdEntity = orderDao.getOrder(mktOrder.getClOrdID().getValue());
-                mktOrdEntity.setPrice(entity.getPrice());
-                fillOrder(mktOrdEntity, executionId);
-                entity.setExecutedQty(entity.getExecutedQty() + remainingQty);
-                entity.setRemainingQty(entity.getQty() - entity.getExecutedQty());
-                partialFillOrder(entity, executionId);
-                orderDao.updateTradeMatch(executionId, remainingQty, entity.getPrice(), entity.getOrderId(), mktOrdEntity.getOrderId());
-                orderDao.addOrderExecution(executionId, entity.getOrderId(), remainingQty, entity.getPrice());
-                orderDao.addOrderExecution(executionId,mktOrdEntity.getOrderId(),remainingQty,entity.getPrice());
-                long time = System.currentTimeMillis() - orderEntryTime;
-                System.out.println("******** MATCHING TIME " + time + " ms ********");
-                break;
-            }else if(entity.getRemainingQty() < remainingQty){
-                // limit order will be fill and mkt order will be Partially filled
-                String executionId = ExecutionCounter.getTradeExecutionId(symbolName);
-                OrderEntity mktOrdEntry = orderDao.getOrder(mktOrder.getClOrdID().getValue());
-                mktOrdEntry.setPrice(entity.getPrice());
-                mktOrdEntry.setExecutedQty(mktOrdEntry.getExecutedQty() + entity.getRemainingQty());
-                mktOrdEntry.setRemainingQty(mktOrdEntry.getQty() - mktOrdEntry.getExecutedQty());
-                partialFillOrder(mktOrdEntry, executionId);
-                fillOrder(entity, executionId);
-                orderDao.updateTradeMatch(executionId, entity.getRemainingQty(), entity.getPrice(), entity.getOrderId(), mktOrdEntry.getOrderId());
-                orderDao.addOrderExecution(executionId, entity.getOrderId(), entity.getRemainingQty(), entity.getPrice());
-                orderDao.addOrderExecution(executionId,mktOrdEntry.getOrderId(),entity.getRemainingQty(),entity.getPrice());
-                long time = System.currentTimeMillis() - orderEntryTime;
-                System.out.println("******** MATCHING TIME " + time + " ms ********");
-            }
-
-        }
-
-    }
-
-    private void matchMktSellOrder(NewOrderSingle mktOrder, List<OrderEntity> limitBuyOrders) throws FieldNotFound{
-
-        double orderQty = mktOrder.getOrderQty().getValue();
-        double remainingQty = mktOrder.getOrderQty().getValue();
-
-        for(OrderEntity entity : limitBuyOrders){
-           if(entity.getRemainingQty() == orderQty){
-               String executionId = ExecutionCounter.getTradeExecutionId(symbolName);
-               fillOrder(entity,executionId);
-               OrderEntity x = orderDao.getOrder(mktOrder.getClOrdID().getValue());
-               x.setPrice(entity.getPrice());
-               fillOrder(x, executionId);
-               orderDao.updateTradeMatch(executionId,orderQty,entity.getPrice(),x.getOrderId(),entity.getOrderId());
-               orderDao.addOrderExecution(executionId, entity.getOrderId(), orderQty, entity.getPrice());
-               orderDao.addOrderExecution(executionId,x.getOrderId(),orderQty,entity.getPrice());
-               long time = System.currentTimeMillis() - orderEntryTime;
-               System.out.println("******** MATCHING TIME " + time + " ms ********");
-               break;
-           }else if(entity.getRemainingQty() > remainingQty){
-
-               String executionId = ExecutionCounter.getTradeExecutionId(symbolName);
-               OrderEntity mktOrdEntity = orderDao.getOrder(mktOrder.getClOrdID().getValue());
-               mktOrdEntity.setPrice(entity.getPrice());
-               fillOrder(mktOrdEntity, executionId);
-               entity.setExecutedQty(entity.getExecutedQty() + remainingQty);
-               entity.setRemainingQty(entity.getQty() - entity.getExecutedQty());
-               partialFillOrder(entity, executionId);
-               orderDao.updateTradeMatch(executionId,remainingQty,entity.getPrice(),entity.getOrderId(),mktOrdEntity.getOrderId());
-               orderDao.addOrderExecution(executionId, entity.getOrderId(), remainingQty, entity.getPrice());
-               orderDao.addOrderExecution(executionId,mktOrdEntity.getOrderId(),remainingQty,entity.getPrice());
-               long time = System.currentTimeMillis() - orderEntryTime;
-               System.out.println("******** MATCHING TIME " + time + " ms ********");
-               break;
-
-           }else if(entity.getRemainingQty() < remainingQty){
-               // limit order will be fill and mkt order will be Partially filled
-               String executionId = ExecutionCounter.getTradeExecutionId(symbolName);
-               OrderEntity mktOrdEntry = orderDao.getOrder(mktOrder.getClOrdID().getValue());
-               mktOrdEntry.setPrice(entity.getPrice());
-               mktOrdEntry.setExecutedQty(mktOrdEntry.getExecutedQty() + entity.getRemainingQty());
-               mktOrdEntry.setRemainingQty(mktOrdEntry.getQty() - mktOrdEntry.getExecutedQty());
-               partialFillOrder(mktOrdEntry, executionId);
-               fillOrder(entity, executionId);
-               orderDao.updateTradeMatch(executionId, entity.getRemainingQty(), entity.getPrice(), entity.getOrderId(), mktOrdEntry.getOrderId());
-               orderDao.addOrderExecution(executionId, entity.getOrderId(), entity.getRemainingQty(), entity.getPrice());
-               orderDao.addOrderExecution(executionId,mktOrdEntry.getOrderId(),entity.getRemainingQty(),entity.getPrice());
-               long time = System.currentTimeMillis() - orderEntryTime;
-               System.out.println("******** MATCHING TIME " + time + " ms ********");
-           }
-        }
-
-    }
-
-    private void saveOrder(NewOrderSingle order,String traderId){
-        try {
-            double price = 0;
-            if(order.getOrdType().getValue() == OrdType.LIMIT){
-                price = order.getPrice().getValue();
-            }
-            orderDao.createOrder(order.getClOrdID().getValue(),traderId,order.getSymbol().getValue(),
-                    order.getOrderQty().getValue(),price,order.getOrdType().getValue(),order.getSide().getValue(),
-                    order.getTimeInForce().getValue(),System.currentTimeMillis(), OrdStatus.NEW,
-                    0l,order.getOrderQty().getValue());
-        } catch (FieldNotFound fieldNotFound) {
-            fieldNotFound.printStackTrace();
-        }
-    }
-
-    private void matchLimitOrders(List<OrderEntity> buyOrders,List<OrderEntity> sellOrders) throws FieldNotFound {
-
-        logger.info("Start matching limit orders");
+        /*logger.info("Start matching limit orders");
 
         int loopLength = 0;
         if(buyOrders != null && sellOrders != null){
@@ -248,25 +158,131 @@ public class SymbolActor extends UntypedActor {
                 executeLimitOrderMatch(buyOd,sellOd);
             }
 
+        }*/
+        logger.info("*****Start matching limit orders******");
+        for (OrderEntity counterOrder : counterOrderList) {
+            String status = executeLimitOrderMatch(newOrder, counterOrder);
+            if(status.equalsIgnoreCase(com.dfn.exchange.utils.Constants.EXECUTION_ORDER_NOT_MATCHING) ||
+                    status.equalsIgnoreCase(com.dfn.exchange.utils.Constants.EXECUTION_ORDER_FILLED)){
+               break;
+            }
         }
 
 
     }
 
+    private String executeLimitOrderMatch(OrderEntity newOrder, OrderEntity counterOrder) {
 
-    private void executeLimitOrderMatch(OrderEntity buyOd,OrderEntity sellOd){
+        if (newOrder.getRemainingQty() == counterOrder.getRemainingQty() ) { // newOrder and counter order filled
+            String executionIdNewOrder = ExecutionCounter.getTradeExecutionId(symbolName);
+            String executionIdCounterOrder = ExecutionCounter.getTradeExecutionId(symbolName);
+            fillOrder(newOrder, executionIdNewOrder);
+            fillOrder(counterOrder, executionIdCounterOrder);
+
+            String buyOrderId = null;
+            String sellOrderId = null;
+            if(String.valueOf(newOrder.getOrdSide()).equalsIgnoreCase(String.valueOf(Side.BUY))){
+                buyOrderId = newOrder.getOrderId();
+                sellOrderId = counterOrder.getOrderId();
+            }else{
+                buyOrderId = counterOrder.getOrderId();
+                sellOrderId = newOrder.getOrderId();
+            }
+            double executedPrice = newOrder.getPrice() <= counterOrder.getPrice() ? newOrder.getPrice(): counterOrder.getPrice();
 
 
+            orderDao.updateTradeMatch(executionIdNewOrder, newOrder.getRemainingQty(),
+                    executedPrice, sellOrderId, buyOrderId); // todo need change executionIdNewOrder to transactionID
+
+            orderDao.addOrderExecution(executionIdNewOrder, newOrder.getOrderId(), newOrder.getRemainingQty(), executedPrice);
+            orderDao.addOrderExecution(executionIdCounterOrder, counterOrder.getOrderId(), counterOrder.getRemainingQty(), executedPrice);
+            long time = System.currentTimeMillis() - orderEntryTime;
+            System.out.println("******** MATCHING TIME " + time + " ms ********");
+            return com.dfn.exchange.utils.Constants.EXECUTION_ORDER_FILLED;
+
+        } else if (newOrder.getRemainingQty() > counterOrder.getRemainingQty()) {  // partially fill new Order full fill counter order
+            String executionIdNewOrder = ExecutionCounter.getTradeExecutionId(symbolName);
+            String executionIdCounterOrder = ExecutionCounter.getTradeExecutionId(symbolName);
+
+            newOrder.setExecutedQty(newOrder.getExecutedQty() + counterOrder.getRemainingQty());
+            newOrder.setRemainingQty(newOrder.getRemainingQty() - counterOrder.getRemainingQty());
+            partialFillOrder(newOrder, executionIdNewOrder);
+
+            counterOrder.setExecutedQty(counterOrder.getQty());
+            fillOrder(counterOrder, executionIdCounterOrder);
+
+            String buyOrderId = null;
+            String sellOrderId = null;
+            if(String.valueOf(newOrder.getOrdSide()).equalsIgnoreCase(String.valueOf(Side.BUY))){
+                buyOrderId = newOrder.getOrderId();
+                sellOrderId = counterOrder.getOrderId();
+            }else{
+                buyOrderId = counterOrder.getOrderId();
+                sellOrderId = newOrder.getOrderId();
+            }
+
+            double executedPrice = newOrder.getPrice() <= counterOrder.getPrice() ? newOrder.getPrice(): counterOrder.getPrice();
+
+
+            orderDao.updateTradeMatch(executionIdNewOrder, counterOrder.getRemainingQty(),
+                    executedPrice, sellOrderId, buyOrderId); //todo need change executionIdNewOrder to transactionID
+
+            orderDao.addOrderExecution(executionIdNewOrder, newOrder.getOrderId(), counterOrder.getRemainingQty(), executedPrice);
+            orderDao.addOrderExecution(executionIdCounterOrder, counterOrder.getOrderId(), counterOrder.getRemainingQty(), executedPrice);
+            long time = System.currentTimeMillis() - orderEntryTime;
+            System.out.println("******** MATCHING TIME " + time + " ms ********");
+            return com.dfn.exchange.utils.Constants.EXECUTION_ORDER_PARTIALLY_FILLED;
+        }else if(newOrder.getRemainingQty() < counterOrder.getRemainingQty()){ //   full fill new Order partially fill counter order
+            String executionIdNewOrder = ExecutionCounter.getTradeExecutionId(symbolName);
+            String executionIdCounterOrder = ExecutionCounter.getTradeExecutionId(symbolName);
+
+            counterOrder.setExecutedQty(counterOrder.getExecutedQty() + newOrder.getRemainingQty());
+            counterOrder.setRemainingQty(counterOrder.getQty() - counterOrder.getExecutedQty());
+            partialFillOrder(counterOrder, executionIdCounterOrder);
+
+            fillOrder(newOrder, executionIdNewOrder);
+
+            String buyOrderId = null;
+            String sellOrderId = null;
+            if(String.valueOf(newOrder.getOrdSide()).equalsIgnoreCase(String.valueOf(Side.BUY))){
+                buyOrderId = newOrder.getOrderId();
+                sellOrderId = counterOrder.getOrderId();
+            }else{
+                buyOrderId = counterOrder.getOrderId();
+                sellOrderId = newOrder.getOrderId();
+            }
+
+            double executedPrice = newOrder.getPrice() <= counterOrder.getPrice() ? newOrder.getPrice(): counterOrder.getPrice();
+
+
+            orderDao.updateTradeMatch(executionIdNewOrder, newOrder.getRemainingQty(),
+                    executedPrice, sellOrderId, buyOrderId);  //todo need change executionIdNewOrder to transactionID
+
+            orderDao.addOrderExecution(executionIdNewOrder, newOrder.getOrderId(), newOrder.getRemainingQty(), executedPrice);
+            orderDao.addOrderExecution(executionIdCounterOrder, counterOrder.getOrderId(), newOrder.getRemainingQty(),executedPrice);
+            long time = System.currentTimeMillis() - orderEntryTime;
+            System.out.println("******** MATCHING TIME " + time + " ms ********");
+            return com.dfn.exchange.utils.Constants.EXECUTION_ORDER_FILLED;
+        } else {
+            logger.info("Unknown matching case.");
+            return com.dfn.exchange.utils.Constants.EXECUTION_ORDER_NOT_MATCHING;
+
+        }
+
+    }
+
+  /*  private void executeLimitOrderMatch(OrderEntity buyOd, OrderEntity sellOd){
 
         if (buyOd.getRemainingQty() == sellOd.getRemainingQty()){
-            String executionId = ExecutionCounter.getTradeExecutionId(symbolName);
-            fillOrder(buyOd,executionId);
-            fillOrder(sellOd, executionId);
+            String executionIdBuyOrder = ExecutionCounter.getTradeExecutionId(symbolName);
+            String executionIdSellOrder = ExecutionCounter.getTradeExecutionId(symbolName);
+            fillOrder(buyOd, executionIdBuyOrder);
+            fillOrder(sellOd, executionIdSellOrder);
 
-            orderDao.updateTradeMatch(executionId, buyOd.getRemainingQty(),
+            orderDao.updateTradeMatch(executionIdBuyOrder, buyOd.getRemainingQty(),
                     buyOd.getPrice(), sellOd.getOrderId(), buyOd.getOrderId());
-            orderDao.addOrderExecution(executionId, buyOd.getOrderId(), buyOd.getRemainingQty(), buyOd.getPrice());
-            orderDao.addOrderExecution(executionId,sellOd.getOrderId(),sellOd.getRemainingQty(),sellOd.getPrice());
+            orderDao.addOrderExecution(executionIdBuyOrder, buyOd.getOrderId(), buyOd.getRemainingQty(), buyOd.getPrice());
+            orderDao.addOrderExecution(executionIdSellOrder, sellOd.getOrderId(),sellOd.getRemainingQty(),sellOd.getPrice());
             long time = System.currentTimeMillis() - orderEntryTime;
             System.out.println("******** MATCHING TIME " + time + " ms ********");
         }else if(buyOd.getRemainingQty() < sellOd.getRemainingQty()){
@@ -302,45 +318,191 @@ public class SymbolActor extends UntypedActor {
 
         transmitOrderBook(orderDao.getBuyLimitOrders(buyOd.getSymbol()),orderDao.getSellLimitOrders(sellOd.getSymbol()));
 
+    }*/
+
+
+    private void matchMarketOrder(NewOrderSingle orderSingle) throws FieldNotFound {
+
+
+        if (orderSingle.getSide().getValue() == Side.BUY) {
+
+            List<OrderEntity> limitSellOrders = orderDao.getSellLimitOrders(orderSingle.getSymbol().getValue());
+            matchMktBuyOrder(orderSingle, limitSellOrders);
+
+        } else if (orderSingle.getSide().getValue() == Side.SELL) {
+
+            List<OrderEntity> limitBuyOrders = orderDao.getBuyLimitOrders(orderSingle.getSymbol().getValue());
+            matchMktSellOrder(orderSingle, limitBuyOrders);
+
+        } else {
+
+            logger.info("Unknown Order Type " + orderSingle.getSide().getValue());
+
+        }
+
+
     }
 
-    private void fillOrder(OrderEntity orderEntity,String executionId){
-        orderDao.updateOrdFill(orderEntity.getOrderId(),orderEntity.getQty());
-        ExecutionReport report = getExecutionReport(orderEntity,OrdStatus.FILLED,executionId);
+    private void matchMktBuyOrder(NewOrderSingle mktOrder, List<OrderEntity> limitSellOrders) throws FieldNotFound {
+
+        double orderQty = mktOrder.getOrderQty().getValue();
+        double remainingQty = mktOrder.getOrderQty().getValue();
+
+        for (OrderEntity entity : limitSellOrders) {
+
+            if (entity.getRemainingQty() == orderQty) {
+                String executionId = ExecutionCounter.getTradeExecutionId(symbolName);
+                fillOrder(entity, executionId);
+                OrderEntity x = orderDao.getOrder(mktOrder.getClOrdID().getValue());
+                x.setPrice(entity.getPrice());
+                fillOrder(x, executionId);
+                orderDao.updateTradeMatch(executionId, orderQty, entity.getPrice(), entity.getOrderId(), x.getOrderId());
+                orderDao.addOrderExecution(executionId, entity.getOrderId(), orderQty, entity.getPrice());
+                orderDao.addOrderExecution(executionId, x.getOrderId(), orderQty, entity.getPrice());
+                long time = System.currentTimeMillis() - orderEntryTime;
+                System.out.println("******** MATCHING TIME " + time + " ms ********");
+                break;
+            } else if (entity.getRemainingQty() > remainingQty) {
+                // mkt order is filling
+                String executionId = ExecutionCounter.getTradeExecutionId(symbolName);
+                OrderEntity mktOrdEntity = orderDao.getOrder(mktOrder.getClOrdID().getValue());
+                mktOrdEntity.setPrice(entity.getPrice());
+                fillOrder(mktOrdEntity, executionId);
+                entity.setExecutedQty(entity.getExecutedQty() + remainingQty);
+                entity.setRemainingQty(entity.getQty() - entity.getExecutedQty());
+                partialFillOrder(entity, executionId);
+                orderDao.updateTradeMatch(executionId, remainingQty, entity.getPrice(), entity.getOrderId(), mktOrdEntity.getOrderId());
+                orderDao.addOrderExecution(executionId, entity.getOrderId(), remainingQty, entity.getPrice());
+                orderDao.addOrderExecution(executionId, mktOrdEntity.getOrderId(), remainingQty, entity.getPrice());
+                long time = System.currentTimeMillis() - orderEntryTime;
+                System.out.println("******** MATCHING TIME " + time + " ms ********");
+                break;
+            } else if (entity.getRemainingQty() < remainingQty) {
+                // limit order will be fill and mkt order will be Partially filled
+                String executionId = ExecutionCounter.getTradeExecutionId(symbolName);
+                OrderEntity mktOrdEntry = orderDao.getOrder(mktOrder.getClOrdID().getValue());
+                mktOrdEntry.setPrice(entity.getPrice());
+                mktOrdEntry.setExecutedQty(mktOrdEntry.getExecutedQty() + entity.getRemainingQty());
+                mktOrdEntry.setRemainingQty(mktOrdEntry.getQty() - mktOrdEntry.getExecutedQty());
+                partialFillOrder(mktOrdEntry, executionId);
+                fillOrder(entity, executionId);
+                orderDao.updateTradeMatch(executionId, entity.getRemainingQty(), entity.getPrice(), entity.getOrderId(), mktOrdEntry.getOrderId());
+                orderDao.addOrderExecution(executionId, entity.getOrderId(), entity.getRemainingQty(), entity.getPrice());
+                orderDao.addOrderExecution(executionId, mktOrdEntry.getOrderId(), entity.getRemainingQty(), entity.getPrice());
+                long time = System.currentTimeMillis() - orderEntryTime;
+                System.out.println("******** MATCHING TIME " + time + " ms ********");
+            }
+
+        }
+
+    }
+
+    private void matchMktSellOrder(NewOrderSingle mktOrder, List<OrderEntity> limitBuyOrders) throws FieldNotFound {
+
+        double orderQty = mktOrder.getOrderQty().getValue();
+        double remainingQty = mktOrder.getOrderQty().getValue();
+
+        for (OrderEntity entity : limitBuyOrders) {
+            if (entity.getRemainingQty() == orderQty) {
+                String executionId = ExecutionCounter.getTradeExecutionId(symbolName);
+                fillOrder(entity, executionId);
+                OrderEntity x = orderDao.getOrder(mktOrder.getClOrdID().getValue());
+                x.setPrice(entity.getPrice());
+                fillOrder(x, executionId);
+                orderDao.updateTradeMatch(executionId, orderQty, entity.getPrice(), x.getOrderId(), entity.getOrderId());
+                orderDao.addOrderExecution(executionId, entity.getOrderId(), orderQty, entity.getPrice());
+                orderDao.addOrderExecution(executionId, x.getOrderId(), orderQty, entity.getPrice());
+                long time = System.currentTimeMillis() - orderEntryTime;
+                System.out.println("******** MATCHING TIME " + time + " ms ********");
+                break;
+            } else if (entity.getRemainingQty() > remainingQty) {
+
+                String executionId = ExecutionCounter.getTradeExecutionId(symbolName);
+                OrderEntity mktOrdEntity = orderDao.getOrder(mktOrder.getClOrdID().getValue());
+                mktOrdEntity.setPrice(entity.getPrice());
+                fillOrder(mktOrdEntity, executionId);
+                entity.setExecutedQty(entity.getExecutedQty() + remainingQty);
+                entity.setRemainingQty(entity.getQty() - entity.getExecutedQty());
+                partialFillOrder(entity, executionId);
+                orderDao.updateTradeMatch(executionId, remainingQty, entity.getPrice(), entity.getOrderId(), mktOrdEntity.getOrderId());
+                orderDao.addOrderExecution(executionId, entity.getOrderId(), remainingQty, entity.getPrice());
+                orderDao.addOrderExecution(executionId, mktOrdEntity.getOrderId(), remainingQty, entity.getPrice());
+                long time = System.currentTimeMillis() - orderEntryTime;
+                System.out.println("******** MATCHING TIME " + time + " ms ********");
+                break;
+
+            } else if (entity.getRemainingQty() < remainingQty) {
+                // limit order will be fill and mkt order will be Partially filled
+                String executionId = ExecutionCounter.getTradeExecutionId(symbolName);
+                OrderEntity mktOrdEntry = orderDao.getOrder(mktOrder.getClOrdID().getValue());
+                mktOrdEntry.setPrice(entity.getPrice());
+                mktOrdEntry.setExecutedQty(mktOrdEntry.getExecutedQty() + entity.getRemainingQty());
+                mktOrdEntry.setRemainingQty(mktOrdEntry.getQty() - mktOrdEntry.getExecutedQty());
+                partialFillOrder(mktOrdEntry, executionId);
+                fillOrder(entity, executionId);
+                orderDao.updateTradeMatch(executionId, entity.getRemainingQty(), entity.getPrice(), entity.getOrderId(), mktOrdEntry.getOrderId());
+                orderDao.addOrderExecution(executionId, entity.getOrderId(), entity.getRemainingQty(), entity.getPrice());
+                orderDao.addOrderExecution(executionId, mktOrdEntry.getOrderId(), entity.getRemainingQty(), entity.getPrice());
+                long time = System.currentTimeMillis() - orderEntryTime;
+                System.out.println("******** MATCHING TIME " + time + " ms ********");
+            }
+        }
+
+    }
+
+    private void saveOrder(NewOrderSingle order, String traderId) {
+        try {
+            double price = 0;
+            if (order.getOrdType().getValue() == OrdType.LIMIT) {
+                price = order.getPrice().getValue();
+            }
+            orderDao.createOrder(order.getClOrdID().getValue(), traderId, order.getSymbol().getValue(),
+                    order.getOrderQty().getValue(), price, order.getOrdType().getValue(), order.getSide().getValue(),
+                    order.getTimeInForce().getValue(), System.currentTimeMillis(), OrdStatus.NEW,
+                    0l, order.getOrderQty().getValue());
+        } catch (FieldNotFound fieldNotFound) {
+            fieldNotFound.printStackTrace();
+        }
+    }
+
+
+    private void fillOrder(OrderEntity orderEntity, String executionId) {
+        orderDao.updateOrdFill(orderEntity.getOrderId(), orderEntity.getQty());
+        ExecutionReport report = getExecutionReport(orderEntity, OrdStatus.FILLED, executionId);
         SessionID sessionID = orderSessions.get(orderEntity.getOrderId());
-        OutMessageFix outMessageFix = new OutMessageFix(report,sessionID);
-        fixHandler.tell(outMessageFix,getSelf());
+        OutMessageFix outMessageFix = new OutMessageFix(report, sessionID);
+        fixHandler.tell(outMessageFix, getSelf());
         orderSessions.remove(orderEntity.getOrderId());
     }
 
-    public void partialFillOrder(OrderEntity order, String executionId){
-        orderDao.partialFill(order.getOrderId(),order.getExecutedQty(),order.getRemainingQty());
-        ExecutionReport report = getExecutionReport(order,OrdStatus.PARTIALLY_FILLED,executionId);
+    public void partialFillOrder(OrderEntity order, String executionId) {
+        orderDao.partialFill(order.getOrderId(), order.getExecutedQty(), order.getRemainingQty());
+        ExecutionReport report = getExecutionReport(order, OrdStatus.PARTIALLY_FILLED, executionId);
         SessionID sessionID = orderSessions.get(order.getOrderId());
-        OutMessageFix outMessageFix = new OutMessageFix(report,sessionID);
-        fixHandler.tell(outMessageFix,getSelf());
+        OutMessageFix outMessageFix = new OutMessageFix(report, sessionID);
+        fixHandler.tell(outMessageFix, getSelf());
     }
 
-    private void transmitOrderBook(List<OrderEntity> buyOrders,List<OrderEntity> sellOrders){
+    private void transmitOrderBook(List<OrderEntity> buyOrders, List<OrderEntity> sellOrders) {
 
         int loopLength = 0;
-        if((buyOrders != null && buyOrders.size() > 0) && (sellOrders != null && sellOrders.size() > 0)){
-            if(buyOrders.size() > sellOrders.size()){
+        if ((buyOrders != null && buyOrders.size() > 0) && (sellOrders != null && sellOrders.size() > 0)) {
+            if (buyOrders.size() > sellOrders.size()) {
                 loopLength = sellOrders.size();
-            }else {
+            } else {
                 loopLength = buyOrders.size();
             }
-        }else {
+        } else {
             return;
         }
 
         List<OrderBookRaw> orderBookRaws = new ArrayList<>(loopLength);
 
-        for(int i = 0; i < loopLength; i++){
+        for (int i = 0; i < loopLength; i++) {
             OrderEntity buy = buyOrders.get(i);
             OrderEntity sell = sellOrders.get(i);
-            OrderBookRaw orderBookRaw = new OrderBookRaw(i,getTimeStmpString(new Date(buy.getOrdTime())),buy.getQty(),buy.getPrice(),
-                    getTimeStmpString(new Date(sell.getOrdTime())),sell.getQty(),sell.getPrice());
+            OrderBookRaw orderBookRaw = new OrderBookRaw(i, getTimeStmpString(new Date(buy.getOrdTime())), buy.getQty(), buy.getPrice(),
+                    getTimeStmpString(new Date(sell.getOrdTime())), sell.getQty(), sell.getPrice());
             orderBookRaws.add(orderBookRaw);
         }
 
@@ -352,12 +514,12 @@ public class SymbolActor extends UntypedActor {
 
     }
 
-    public String getTimeStmpString(Date date){
+    public String getTimeStmpString(Date date) {
         SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HHmmss");
         return sdf.format(date);
     }
 
-    private ExecutionReport getExecutionReport(OrderEntity order,char ordStatus, String executionId){
+    private ExecutionReport getExecutionReport(OrderEntity order, char ordStatus, String executionId) {
         ExecutionReport report = new ExecutionReport();
         report.set(new OrderQty(order.getQty()));
         report.set(new OrderID(order.getOrderId()));

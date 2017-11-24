@@ -5,11 +5,11 @@ import akka.actor.Props;
 import akka.actor.UntypedActor;
 import com.dfn.exchange.ado.DataService;
 import com.dfn.exchange.ado.OrderDao;
+import com.mysql.cj.x.protobuf.MysqlxCrud;
 import quickfix.FieldNotFound;
 import quickfix.SessionID;
 import quickfix.field.*;
-import quickfix.fix42.ExecutionReport;
-import quickfix.fix42.NewOrderSingle;
+import quickfix.fix42.*;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -42,7 +42,7 @@ public class ExchangeSupervisor extends UntypedActor {
                     symbol.getSymbolCode());
             symbolActorMap.put(symbol.getSymbolCode(),ref);
         });
-        tradeHandler = getContext().actorOf(Props.create(TradeHelper.class));
+        tradeHelper = getContext().actorOf(Props.create(TradeHelper.class));
         feedHelper = getContext().actorOf(Props.create(FeedHelper.class));
         ExecutionCounter.setLastExecutionId(orderDao.getLastTradeMatchId());
     }
@@ -66,6 +66,25 @@ public class ExchangeSupervisor extends UntypedActor {
                     rejectOrder(order,getSender(),inf.getSessionID());
                 }
 
+            }else if(inf.getFixMessage() instanceof OrderCancelRequest){
+                OrderCancelRequest cancelOrderRequest = (OrderCancelRequest) inf.getFixMessage();
+                ActorRef ref = symbolActorMap.get(cancelOrderRequest.getSymbol().getValue());
+                if(ref != null){
+                    acceptCancelOrder(cancelOrderRequest, getSender(), inf.getSessionID());
+                    ref.tell(message, getSelf());
+                }else{
+                    rejectCancelOrder(cancelOrderRequest, getSender(), inf.getSessionID());
+                }
+
+            }else if(inf.getFixMessage() instanceof OrderCancelReplaceRequest){
+                OrderCancelReplaceRequest amendOrderRequest = (OrderCancelReplaceRequest) inf.getFixMessage();
+                ActorRef ref = symbolActorMap.get(amendOrderRequest.getSymbol().getValue());
+                if(ref != null){
+                    acceptAmendOrder(amendOrderRequest, getSender(), inf.getSessionID());
+                    ref.tell(message, getSelf());
+                }else{
+                    rejectAmendOrder(amendOrderRequest, getSender(), inf.getSessionID());
+                }
             }
         }
     }
@@ -81,8 +100,10 @@ public class ExchangeSupervisor extends UntypedActor {
         executionReport.set(new OrdStatus(OrdStatus.NEW));
         executionReport.set(order.getSymbol());
         executionReport.set(order.getSide());
-        executionReport.set(new LeavesQty(qty.getValue()));
-        executionReport.set(new CumQty(0.0));
+        executionReport.set(order.getOrderQty());
+        executionReport.set(new CumQty(0));
+        double leavesQty = executionReport.getOrderQty().getValue() - executionReport.getCumQty().getValue();
+        executionReport.set(new LeavesQty(leavesQty));
         executionReport.set(new AvgPx(105));
         executionReport.set(new ClientID("1"));
         OutMessageFix outMessageFix = new OutMessageFix(executionReport,sessionID);
@@ -107,6 +128,45 @@ public class ExchangeSupervisor extends UntypedActor {
         executionReport.set(new ClientID("1"));
         OutMessageFix outMessageFix = new OutMessageFix(executionReport,sessionID);
         fix.tell(outMessageFix,getSelf());
+    }
+
+    private void acceptCancelOrder(OrderCancelRequest cancelOrder, ActorRef fix, SessionID sessionID ) throws FieldNotFound {
+        OrderQty qty = new OrderQty(cancelOrder.getOrderQty().getValue());
+        ExecutionReport executionReport = new ExecutionReport();
+        executionReport.set(new OrderID(cancelOrder.getClOrdID().getValue()));
+        executionReport.set(cancelOrder.getClOrdID());
+        executionReport.set(new ExecID("0000000000"));
+        executionReport.set(new ExecTransType(ExecTransType.CANCEL));
+
+    }
+    private void rejectCancelOrder(OrderCancelRequest cancelOrder, ActorRef fix, SessionID sessionID) throws FieldNotFound {
+        OrderCancelReject  cancelReject = new OrderCancelReject();
+        cancelReject.set(cancelOrder.getOrderID());
+        cancelReject.set(cancelOrder.getClOrdID());
+        cancelReject.set(cancelOrder.getOrigClOrdID());
+        cancelReject.set(new OrdStatus(OrdStatus.REJECTED));
+        cancelReject.set(new CxlRejReason(CxlRejReason.OTHER));
+        OutMessageFix outMessageFix = new OutMessageFix(cancelReject, sessionID);
+        fix.tell(outMessageFix, getSelf());
+
+    }
+
+    private void acceptAmendOrder(OrderCancelReplaceRequest amendOrderRequest, ActorRef fix, SessionID sessionID ) throws FieldNotFound {
+        OrderQty qty = new OrderQty(amendOrderRequest.getOrderQty().getValue());
+        ExecutionReport executionReport = new ExecutionReport();
+        executionReport.set(new OrderID(amendOrderRequest.getClOrdID().getValue()));
+        executionReport.set(amendOrderRequest.getClOrdID());
+        executionReport.set(new ExecID("0000000000"));
+        executionReport.set(new ExecType(ExecType.REPLACE));
+
+
+    }
+    private void rejectAmendOrder(OrderCancelReplaceRequest amendOrderRequest, ActorRef fix, SessionID sessionID) throws FieldNotFound {
+        Reject  amendReject = new Reject();
+       // amendReject.s
+        OutMessageFix outMessageFix = new OutMessageFix(amendReject, sessionID);
+        fix.tell(outMessageFix, getSelf());
+
     }
 
 }

@@ -111,6 +111,13 @@ public class FixHandler extends UntypedActor {
             getContext().parent().tell(inMessageFix, getSelf());
         }
 
+        public void onMessage(OrderCancelReplaceRequest amendRequest, SessionID sessionID){
+            System.out.println("****Amend Order Request Received****"  + amendRequest.toString());
+        //    System.out.println(amendRequest.toString());
+            InMessageFix inMessageFix = new InMessageFix(amendRequest,sessionID);
+            getContext().parent().tell(inMessageFix, getSelf());
+        }
+
         @Override
         public void fromApp(Message message, SessionID sessionID) throws FieldNotFound, IncorrectDataFormat, IncorrectTagValue, UnsupportedMessageType {
             try {
@@ -123,6 +130,10 @@ public class FixHandler extends UntypedActor {
             } catch (IncorrectTagValue incorrectTagValue) {
                 incorrectTagValue.printStackTrace();
             }
+        }
+
+        public void onMessage(BusinessMessageReject reject, SessionID sessionID){
+
         }
 
         public void sendFixMessage(OutMessageFix outMessageFix){
