@@ -1,11 +1,14 @@
 package com.dfn.exchange;
 
 import akka.actor.UntypedActor;
+import com.dfn.exchange.beans.MarketVolume;
 import com.dfn.exchange.beans.Quote;
+import com.dfn.exchange.beans.TradeMatch;
 import com.google.gson.Gson;
 import org.apache.log4j.LogManager;
 import org.apache.log4j.Logger;
 import quickfix.FieldNotFound;
+import quickfix.field.Price;
 import quickfix.fix42.NewOrderSingle;
 
 import java.io.*;
@@ -49,6 +52,10 @@ public class FeedHandler extends UntypedActor {
 
         }else if(message instanceof String){
             stringMsg = (String) message;
+        }else if(message instanceof TradeMatch){
+            stringMsg = gson.toJson(message);
+        }else if(message instanceof MarketVolume){
+            stringMsg = gson.toJson(message);
         }
 
         sendMessage(stringMsg);
@@ -65,7 +72,8 @@ public class FeedHandler extends UntypedActor {
 
     private Quote getQuote(NewOrderSingle order) throws FieldNotFound{
         Quote quote = new Quote();
-        quote.setPrice(order.getPrice().getValue());
+        if(order.isSet(new Price()))
+            quote.setPrice(order.getPrice().getValue());
         quote.setQty(order.getOrderQty().getValue());
         quote.setSide(order.getSide().getValue());
         quote.setSymbol(order.getSymbol().getValue());

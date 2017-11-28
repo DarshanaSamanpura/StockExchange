@@ -136,7 +136,7 @@ public class FixHandler extends UntypedActor {
 
         }
 
-        public void sendFixMessage(OutMessageFix outMessageFix){
+        public synchronized void sendFixMessage(OutMessageFix outMessageFix){
             try {
                 fixLogger.info("Sending execution message");
                 Session.sendToTarget(outMessageFix.getFixMessage(), outMessageFix.getSessionID());

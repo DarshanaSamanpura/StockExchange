@@ -1,6 +1,7 @@
 package com.dfn.exchange;
 
 import com.dfn.exchange.beans.Symbol;
+import com.dfn.exchange.beans.SymbolList;
 import com.google.gson.Gson;
 
 import java.util.ArrayList;
@@ -67,7 +68,10 @@ public class SymbolSettings {
 
     public static String getSymbolString(){
         if(symbolJson == null){
-            symbolJson = gson.toJson(getSymbolList());
+            SymbolList symbolList = new SymbolList();
+            symbolList.setMessageType('S');
+            symbolList.setSymbolList(getSymbolList());
+            symbolJson = gson.toJson(symbolList);
         }
         return symbolJson;
     }
