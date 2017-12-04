@@ -2,6 +2,7 @@ package com.dfn.exchange;
 
 import akka.actor.ActorRef;
 import akka.actor.UntypedActor;
+import com.dfn.exchange.ado.CustomerDao;
 import com.dfn.exchange.ado.DataService;
 import com.dfn.exchange.ado.OrderDao;
 import com.dfn.exchange.beans.*;
@@ -9,7 +10,6 @@ import com.dfn.exchange.utils.TimeUtils;
 import com.google.gson.Gson;
 import org.apache.log4j.LogManager;
 import org.apache.log4j.Logger;
-import org.hibernate.internal.CriteriaImpl;
 import quickfix.FieldNotFound;
 import quickfix.SessionID;
 import quickfix.field.*;
@@ -33,6 +33,7 @@ public class SymbolActor extends UntypedActor {
     private long tradeVolume;
     private double lastTradePrice;
     private OrderDao orderDao = null;
+    private CustomerDao customerDao = null;
     private ActorRef fixHandler = null;
     private ActorRef feedHandler = null;
     Gson gson = new Gson();
@@ -47,6 +48,7 @@ public class SymbolActor extends UntypedActor {
         this.fixHandler = fixHander;
         this.feedHandler = feedHander;
         this.orderDao = DataService.getInstance(Constants.DB).getDbi().onDemand(OrderDao.class);
+        this.customerDao = DataService.getInstance(Constants.DB).getDbi().onDemand(CustomerDao.class);
     }
 
 
@@ -235,6 +237,8 @@ public class SymbolActor extends UntypedActor {
 
             orderDao.addOrderExecution(executionIdNewOrder, newOrder.getOrderId(), newOrder.getRemainingQty(), executedPrice);
             orderDao.addOrderExecution(executionIdCounterOrder, counterOrder.getOrderId(), counterOrder.getRemainingQty(), executedPrice);
+            transferHolding(newOrder,counterOrder,newOrder.getRemainingQty());
+
             long time = System.currentTimeMillis() - orderEntryTime;
             System.out.println("******** MATCHING TIME " + time + " ms ********");
             transmitUpdatedOrderBook();
@@ -274,6 +278,8 @@ public class SymbolActor extends UntypedActor {
 
             orderDao.addOrderExecution(executionIdNewOrder, newOrder.getOrderId(), counterOrder.getRemainingQty(), executedPrice);
             orderDao.addOrderExecution(executionIdCounterOrder, counterOrder.getOrderId(), counterOrder.getRemainingQty(), executedPrice);
+            transferHolding(newOrder,counterOrder,counterOrder.getRemainingQty());
+
             long time = System.currentTimeMillis() - orderEntryTime;
             System.out.println("******** MATCHING TIME " + time + " ms ********");
             transmitUpdatedOrderBook();
@@ -312,6 +318,8 @@ public class SymbolActor extends UntypedActor {
 
             orderDao.addOrderExecution(executionIdNewOrder, newOrder.getOrderId(), newOrder.getRemainingQty(), executedPrice);
             orderDao.addOrderExecution(executionIdCounterOrder, counterOrder.getOrderId(), newOrder.getRemainingQty(),executedPrice);
+            transferHolding(newOrder,counterOrder,newOrder.getRemainingQty());
+
             long time = System.currentTimeMillis() - orderEntryTime;
             System.out.println("******** MATCHING TIME " + time + " ms ********");
             transmitUpdatedOrderBook();
@@ -421,12 +429,13 @@ public class SymbolActor extends UntypedActor {
                 x.setPrice(entity.getPrice());
                 fillOrder(x, executionId);
                 feedHandler.tell(new TradeMatch(executionId, orderQty,
-                        entity.getPrice(), TimeUtils.getTimeString(),x.getOrderId(),entity.getOrderId()), getSelf());
+                        entity.getPrice(), TimeUtils.getTimeString(), x.getOrderId(), entity.getOrderId()), getSelf());
                 orderDao.updateTradeMatch(executionId, orderQty, entity.getPrice(), entity.getOrderId(), x.getOrderId());
                 executedVol = executedVol + orderQty;
                 updateVolume(orderQty);
                 orderDao.addOrderExecution(executionId, entity.getOrderId(), orderQty, entity.getPrice());
                 orderDao.addOrderExecution(executionId, x.getOrderId(), orderQty, entity.getPrice());
+                transferHolding(entity.getAccountNumber(),x.getAccountNumber(),x.getSymbol(),orderQty);
                 long time = System.currentTimeMillis() - orderEntryTime;
                 System.out.println("******** MATCHING TIME " + time + " ms ********");
                 break;
@@ -441,12 +450,13 @@ public class SymbolActor extends UntypedActor {
                 entity.setRemainingQty(entity.getQty() - entity.getExecutedQty());
                 partialFillOrder(entity, executionId);
                 feedHandler.tell(new TradeMatch(executionId, remainingQty,
-                        entity.getPrice(), TimeUtils.getTimeString(),mktOrdEntity.getOrderId(),entity.getOrderId()), getSelf());
+                        entity.getPrice(), TimeUtils.getTimeString(), mktOrdEntity.getOrderId(), entity.getOrderId()), getSelf());
                 orderDao.updateTradeMatch(executionId, remainingQty, entity.getPrice(), entity.getOrderId(), mktOrdEntity.getOrderId());
                 executedVol = executedVol + remainingQty;
                 updateVolume(remainingQty);
                 orderDao.addOrderExecution(executionId, entity.getOrderId(), remainingQty, entity.getPrice());
                 orderDao.addOrderExecution(executionId, mktOrdEntity.getOrderId(), remainingQty, entity.getPrice());
+                transferHolding(entity.getAccountNumber(), mktOrdEntity.getAccountNumber(), mktOrdEntity.getSymbol(),remainingQty);
                 long time = System.currentTimeMillis() - orderEntryTime;
                 System.out.println("******** MATCHING TIME " + time + " ms ********");
                 break;
@@ -461,12 +471,13 @@ public class SymbolActor extends UntypedActor {
                 partialFillOrder(mktOrdEntry, executionId);
                 fillOrder(entity, executionId);
                 feedHandler.tell(new TradeMatch(executionId, entity.getRemainingQty(),
-                        entity.getPrice(), TimeUtils.getTimeString(),mktOrdEntry.getOrderId(),entity.getOrderId()), getSelf());
+                        entity.getPrice(), TimeUtils.getTimeString(), mktOrdEntry.getOrderId(), entity.getOrderId()), getSelf());
                 orderDao.updateTradeMatch(executionId, entity.getRemainingQty(), entity.getPrice(), entity.getOrderId(), mktOrdEntry.getOrderId());
                 executedVol = executedVol + entity.getRemainingQty();
                 updateVolume(entity.getRemainingQty());
                 orderDao.addOrderExecution(executionId, entity.getOrderId(), entity.getRemainingQty(), entity.getPrice());
                 orderDao.addOrderExecution(executionId, mktOrdEntry.getOrderId(), entity.getRemainingQty(), entity.getPrice());
+                transferHolding(entity.getAccountNumber(), mktOrdEntry.getAccountNumber(), mktOrdEntry.getSymbol(), entity.getRemainingQty());
                 long time = System.currentTimeMillis() - orderEntryTime;
                 System.out.println("******** MATCHING TIME " + time + " ms ********");
             }
@@ -483,7 +494,9 @@ public class SymbolActor extends UntypedActor {
         double orderQty = mktOrder.getOrderQty().getValue();
         double remainingQty = mktOrder.getOrderQty().getValue();
         boolean isMatched = false;
+
         for (OrderEntity entity : limitBuyOrders) {
+
             if (entity.getRemainingQty() == orderQty) {
                 isMatched = true;
                 String executionId = ExecutionCounter.getTradeExecutionId(symbolName);
@@ -492,12 +505,13 @@ public class SymbolActor extends UntypedActor {
                 x.setPrice(entity.getPrice());
                 fillOrder(x, executionId);
                 feedHandler.tell(new TradeMatch(executionId, orderQty,
-                        entity.getPrice(), TimeUtils.getTimeString(),entity.getOrderId(),x.getOrderId()), getSelf());
+                        entity.getPrice(), TimeUtils.getTimeString(), entity.getOrderId(), x.getOrderId()), getSelf());
                 orderDao.updateTradeMatch(executionId, orderQty, entity.getPrice(), x.getOrderId(), entity.getOrderId());
                 executedVol = executedVol + orderQty;
                 updateVolume(orderQty);
                 orderDao.addOrderExecution(executionId, entity.getOrderId(), orderQty, entity.getPrice());
                 orderDao.addOrderExecution(executionId, x.getOrderId(), orderQty, entity.getPrice());
+                transferHolding(x.getAccountNumber(),entity.getAccountNumber(),x.getSymbol(),orderQty);
                 long time = System.currentTimeMillis() - orderEntryTime;
                 System.out.println("******** MATCHING TIME " + time + " ms ********");
                 break;
@@ -511,12 +525,13 @@ public class SymbolActor extends UntypedActor {
                 entity.setRemainingQty(entity.getQty() - entity.getExecutedQty());
                 partialFillOrder(entity, executionId);
                 feedHandler.tell(new TradeMatch(executionId, remainingQty,
-                        entity.getPrice(), TimeUtils.getTimeString(),entity.getOrderId(),mktOrdEntity.getOrderId()), getSelf());
+                        entity.getPrice(), TimeUtils.getTimeString(), entity.getOrderId(), mktOrdEntity.getOrderId()), getSelf());
                 orderDao.updateTradeMatch(executionId, remainingQty, entity.getPrice(), entity.getOrderId(), mktOrdEntity.getOrderId());
                 executedVol = executedVol + remainingQty;
                 updateVolume(remainingQty);
                 orderDao.addOrderExecution(executionId, entity.getOrderId(), remainingQty, entity.getPrice());
                 orderDao.addOrderExecution(executionId, mktOrdEntity.getOrderId(), remainingQty, entity.getPrice());
+                transferHolding(mktOrdEntity.getAccountNumber(),entity.getAccountNumber(),mktOrdEntity.getSymbol(),remainingQty);
                 long time = System.currentTimeMillis() - orderEntryTime;
                 System.out.println("******** MATCHING TIME " + time + " ms ********");
                 break;
@@ -532,12 +547,13 @@ public class SymbolActor extends UntypedActor {
                 partialFillOrder(mktOrdEntry, executionId);
                 fillOrder(entity, executionId);
                 feedHandler.tell(new TradeMatch(executionId, entity.getRemainingQty(),
-                        entity.getPrice(), TimeUtils.getTimeString(),entity.getOrderId(),mktOrdEntry.getOrderId()), getSelf());
+                        entity.getPrice(), TimeUtils.getTimeString(), entity.getOrderId(), mktOrdEntry.getOrderId()), getSelf());
                 orderDao.updateTradeMatch(executionId, entity.getRemainingQty(), entity.getPrice(), entity.getOrderId(), mktOrdEntry.getOrderId());
                 executedVol = executedVol + entity.getRemainingQty();
                 updateVolume(entity.getRemainingQty());
                 orderDao.addOrderExecution(executionId, entity.getOrderId(), entity.getRemainingQty(), entity.getPrice());
                 orderDao.addOrderExecution(executionId, mktOrdEntry.getOrderId(), entity.getRemainingQty(), entity.getPrice());
+                transferHolding(mktOrdEntry.getAccountNumber(), entity.getAccountNumber(), mktOrdEntry.getSymbol(), entity.getRemainingQty());
                 long time = System.currentTimeMillis() - orderEntryTime;
                 System.out.println("******** MATCHING TIME " + time + " ms ********");
             }
@@ -554,7 +570,7 @@ public class SymbolActor extends UntypedActor {
             if (order.getOrdType().getValue() == OrdType.LIMIT) {
                 price = order.getPrice().getValue();
             }
-            orderDao.createOrder(order.getClOrdID().getValue(), traderId, order.getSymbol().getValue(),
+            orderDao.createOrder(order.getClOrdID().getValue(), traderId,order.getSymbol().getValue(),order.getAccount().getValue(),
                     order.getOrderQty().getValue(), price, order.getOrdType().getValue(), order.getSide().getValue(),
                     order.getTimeInForce().getValue(), System.currentTimeMillis(), OrdStatus.NEW,
                     0l, order.getOrderQty().getValue());
@@ -629,8 +645,30 @@ public class SymbolActor extends UntypedActor {
 
         OrderBook orderBook = new OrderBook(orderBookRaws);
         orderBook.setMessageType('B');
+        orderBook.setSymbol(this.symbolName);
         String json = gson.toJson(orderBook);
         feedHandler.tell(json, getSelf());
+
+
+    }
+
+    private void transferHolding(String fromAcc,String toAcc,String symbol,double qty){
+        customerDao.debitAccount(fromAcc, symbol, qty);
+        customerDao.creditAccount(toAcc, symbol, qty);
+    }
+
+    private void transferHolding(OrderEntity ordOne, OrderEntity ordTwo, double qty){
+
+        if(ordOne.getOrdSide() == Side.BUY && ordTwo.getOrdSide() == Side.SELL){
+            customerDao.creditAccount(ordOne.getAccountNumber(),ordOne.getSymbol(),qty);
+            customerDao.debitAccount(ordTwo.getAccountNumber(),ordOne.getSymbol(),qty);
+        }else if(ordOne.getOrdSide() == Side.SELL && ordTwo.getOrdSide() == Side.BUY){
+            customerDao.creditAccount(ordTwo.getAccountNumber(),ordOne.getSymbol(),qty);
+            customerDao.debitAccount(ordOne.getAccountNumber(),ordOne.getSymbol(),qty);
+        }else {
+            logger.warn("UNKNOWN condition in holding transfer.");
+        }
+
 
 
     }
@@ -648,6 +686,7 @@ public class SymbolActor extends UntypedActor {
         OutMessageFix outMessageFix = new OutMessageFix(report, sessionID);
         fixHandler.tell(outMessageFix, getSelf());
     }
+
     private ExecutionReport getExecutionReport(OrderEntity order, char ordStatus, String executionId) {
         ExecutionReport report = new ExecutionReport();
         report.set(new OrderQty(order.getQty()));

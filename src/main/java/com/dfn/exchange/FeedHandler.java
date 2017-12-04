@@ -129,7 +129,7 @@ public class FeedHandler extends UntypedActor {
                 Runnable r = () -> startReadSocket();
                 readerThred = new Thread(r);
                 //sending initial symbol details response.
-                write(SymbolSettings.getSymbolString());
+                write(Settings.getSymbolString());
             } catch (IOException e) {
                 e.printStackTrace();
             }

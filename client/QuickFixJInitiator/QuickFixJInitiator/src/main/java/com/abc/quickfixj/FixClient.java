@@ -71,6 +71,8 @@ public class FixClient {
     private static Order createOrder(Scanner scanner){
         Order order = new Order();
         order.setClOrdId(Long.toString(System.currentTimeMillis()));
+        System.out.println("Trading Account ");
+        order.setTradingAcc(scanner.nextLine());
         System.out.println("Enter the Symbol ");
         order.setSymbol(scanner.nextLine());
         System.out.println("Side (1 - buy / 2 - sell)");

@@ -13,6 +13,15 @@ public class Order {
     private char ordType;
     private String symbol;
     private char ordStatus;
+    private String tradingAcc;
+
+    public String getTradingAcc() {
+        return tradingAcc;
+    }
+
+    public void setTradingAcc(String tradingAcc) {
+        this.tradingAcc = tradingAcc;
+    }
 
     public String getSymbol() {
         return symbol;

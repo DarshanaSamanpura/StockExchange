@@ -5,7 +5,6 @@ import akka.actor.Props;
 import akka.actor.UntypedActor;
 import com.dfn.exchange.ado.DataService;
 import com.dfn.exchange.ado.OrderDao;
-import com.mysql.cj.x.protobuf.MysqlxCrud;
 import quickfix.FieldNotFound;
 import quickfix.SessionID;
 import quickfix.field.*;
@@ -37,7 +36,7 @@ public class ExchangeSupervisor extends UntypedActor {
 //            ActorRef ref = getContext().actorOf(Props.create(SymbolActor.class,s,tradeHandler,feedHandler),s);
 //            symbolActorMap.put(s,ref);
 //        });
-        SymbolSettings.getSymbolList().forEach(symbol -> {
+        Settings.getSymbolList().forEach(symbol -> {
             ActorRef ref = getContext().actorOf(Props.create(SymbolActor.class,symbol.getSymbolCode(),tradeHandler,feedHandler),
                     symbol.getSymbolCode());
             symbolActorMap.put(symbol.getSymbolCode(),ref);

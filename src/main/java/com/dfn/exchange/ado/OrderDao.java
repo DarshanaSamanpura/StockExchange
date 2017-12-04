@@ -18,10 +18,11 @@ import java.util.List;
  */
 public interface OrderDao {
 
-    @SqlUpdate("insert into orders(order_id, trader_id, symbol, qty, price, ord_type, ord_side, tif, ord_time, order_status," +
-            "executed_qty, remaining_qty) values (:order_id,:trader_id,:symbol,:qty,:price,:ord_type,:ord_side,:tif," +
+    @SqlUpdate("insert into orders(order_id, trader_id, acc_number, symbol, qty, price, ord_type, ord_side, tif, ord_time, order_status," +
+            "executed_qty, remaining_qty) values (:order_id,:trader_id,:acc_number,:symbol,:qty,:price,:ord_type,:ord_side,:tif," +
             ":ord_time,:order_status,:executed_qty,:remaining_qty)")
     void createOrder(@Bind("order_id") String ordId, @Bind("trader_id") String traderId, @Bind("symbol") String symbol,
+                     @Bind("acc_number") String accNumber,
                      @Bind("qty") double qty, @Bind("price") double price, @Bind("ord_type") char ordType,
                      @Bind("ord_side") char ordSide, @Bind("tif") char tif, @Bind("ord_time") long ordTime,
                      @Bind("order_status") char ordStatus, @Bind("executed_qty") double executedQty,

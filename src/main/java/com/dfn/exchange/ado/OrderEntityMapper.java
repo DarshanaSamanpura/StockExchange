@@ -27,6 +27,7 @@ public class OrderEntityMapper implements ResultSetMapper<OrderEntity> {
         entity.setSymbol(resultSet.getString("symbol"));
         entity.setTif(resultSet.getString("tif").toCharArray()[0]);
         entity.setTraderId(resultSet.getString("trader_id"));
+        entity.setAccountNumber(resultSet.getString("acc_number"));
         return entity;
     }
 }

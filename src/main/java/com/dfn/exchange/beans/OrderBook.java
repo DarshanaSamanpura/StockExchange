@@ -8,6 +8,7 @@ import java.util.List;
 public class OrderBook extends DfnMessage{
 
     private final long timeStamp;
+    private String symbol;
     private List<OrderBookRaw> raws;
 
     public OrderBook(List<OrderBookRaw> raws){
@@ -21,5 +22,13 @@ public class OrderBook extends DfnMessage{
 
     public List<OrderBookRaw> getRaws() {
         return raws;
+    }
+
+    public String getSymbol() {
+        return symbol;
+    }
+
+    public void setSymbol(String symbol) {
+        this.symbol = symbol;
     }
 }
