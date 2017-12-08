@@ -5,7 +5,7 @@ LogonTimeout=30
 ReconnectInterval=5
 ResetOnLogon=Y
 FileLogPath=./Client_Logs
-SenderCompID=HSBC
+SenderCompID=DARE
 ValidateIncomingMessage=N
 [SESSION]#A single session
 BeginString=FIX.4.2

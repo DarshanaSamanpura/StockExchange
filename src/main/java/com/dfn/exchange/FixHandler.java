@@ -30,7 +30,7 @@ public class FixHandler extends UntypedActor {
         SocketAcceptor socketAcceptor = null;
         fixServiceDao = DataService.getInstance(Constants.DB).getDbi().onDemand(FixServiceDao.class);
         try {
-            SessionSettings executorSettings = new SessionSettings("./acceptorSettings.txt");
+            SessionSettings executorSettings = new SessionSettings("./Config/acceptorSettings.txt");
             fixServer = new FixServer();
             FileStoreFactory fileStoreFactory = new FileStoreFactory(executorSettings);
             MessageFactory messageFactory = new DefaultMessageFactory();
@@ -39,6 +39,7 @@ public class FixHandler extends UntypedActor {
             socketAcceptor.start();
         }catch (ConfigError error){
             logger.error("Fix Server could not be started",error);
+            error.printStackTrace();
         }
     }
 

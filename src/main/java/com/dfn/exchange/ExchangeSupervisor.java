@@ -24,12 +24,14 @@ public class ExchangeSupervisor extends UntypedActor {
     private ActorRef feedHelper = null;
     private Map<String,ActorRef> symbolActorMap = new HashMap<>();
     private OrderDao orderDao = null;
+    private ActorRef statActor = null;
 
 
     @Override
     public void preStart() throws Exception {
         super.preStart();
         this.orderDao = DataService.getInstance(Constants.DB).getDbi().onDemand(OrderDao.class);
+        statActor = getContext().actorOf(Props.create(StatActor.class),"statActor");
         feedHandler = getContext().actorOf(Props.create(FeedHandler.class), "feedHandler");
         tradeHandler = getContext().actorOf(Props.create(FixHandler.class),"tradeHandler");
 //        Constants.getSymbols().forEach(s -> {
