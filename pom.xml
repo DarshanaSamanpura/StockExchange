@@ -13,6 +13,7 @@
         <dropwizard.version>0.9.1</dropwizard.version>
         <log4j2.version>2.4.1</log4j2.version>
         <akka.version>2.4.1</akka.version>
+        <jetty.version>9.3.7.v20160115</jetty.version>
     </properties>
 
     <dependencies>
@@ -137,11 +138,12 @@
             <scope>test</scope>
         </dependency>
 
-
-
-
-
-
+        <!-- Netty WS Dependency-->
+        <dependency>
+            <groupId>io.netty</groupId>
+            <artifactId>netty-all</artifactId>
+            <version>4.1.0.CR7</version>
+        </dependency>
     </dependencies>
 
     <build>

@@ -1,0 +1,263 @@
+20171128-06:20:16: Session FIX.4.2:ALGO-EXCHANGE->HSBC schedule is weekly, SUN 00:00:00-UTC - FRI 00:00:00-UTC
+20171128-06:20:16: Created session: FIX.4.2:ALGO-EXCHANGE->HSBC
+20171128-06:21:18: Accepting session FIX.4.2:ALGO-EXCHANGE->HSBC from /127.0.0.1:20563
+20171128-06:21:18: Acceptor heartbeat set to 5 seconds
+20171128-06:21:18: Logon contains ResetSeqNumFlag=Y, resetting sequence numbers to 1
+20171128-06:21:18: Received logon
+20171128-06:21:18: Responding to Logon request
+20171128-06:28:19: Disconnecting: Socket exception (/127.0.0.1:20563): java.io.IOException: An existing connection was forcibly closed by the remote host
+20171128-06:28:25: Accepting session FIX.4.2:ALGO-EXCHANGE->HSBC from /127.0.0.1:20639
+20171128-06:28:25: Acceptor heartbeat set to 5 seconds
+20171128-06:28:25: Logon contains ResetSeqNumFlag=Y, resetting sequence numbers to 1
+20171128-06:28:25: Received logon
+20171128-06:28:25: Responding to Logon request
+20171128-07:01:49: Session FIX.4.2:ALGO-EXCHANGE->HSBC schedule is weekly, SUN 00:00:00-UTC - FRI 00:00:00-UTC
+20171128-07:01:49: Created session: FIX.4.2:ALGO-EXCHANGE->HSBC
+20171128-07:10:07: Accepting session FIX.4.2:ALGO-EXCHANGE->HSBC from /127.0.0.1:23910
+20171128-07:10:07: Acceptor heartbeat set to 5 seconds
+20171128-07:10:07: Logon contains ResetSeqNumFlag=Y, resetting sequence numbers to 1
+20171128-07:10:07: Received logon
+20171128-07:10:07: Responding to Logon request
+20171128-07:11:27: Session FIX.4.2:ALGO-EXCHANGE->HSBC schedule is weekly, SUN 00:00:00-UTC - FRI 00:00:00-UTC
+20171128-07:11:27: Created session: FIX.4.2:ALGO-EXCHANGE->HSBC
+20171128-07:18:28: Accepting session FIX.4.2:ALGO-EXCHANGE->HSBC from /127.0.0.1:24019
+20171128-07:18:28: Acceptor heartbeat set to 5 seconds
+20171128-07:18:28: Logon contains ResetSeqNumFlag=Y, resetting sequence numbers to 1
+20171128-07:18:28: Received logon
+20171128-07:18:28: Responding to Logon request
+20171128-07:41:31: Session FIX.4.2:ALGO-EXCHANGE->HSBC schedule is weekly, SUN 00:00:00-UTC - FRI 00:00:00-UTC
+20171128-07:41:31: Created session: FIX.4.2:ALGO-EXCHANGE->HSBC
+20171128-07:48:15: Accepting session FIX.4.2:ALGO-EXCHANGE->HSBC from /127.0.0.1:24264
+20171128-07:48:15: Acceptor heartbeat set to 5 seconds
+20171128-07:48:15: Logon contains ResetSeqNumFlag=Y, resetting sequence numbers to 1
+20171128-07:48:15: Received logon
+20171128-07:48:15: Responding to Logon request
+20171128-09:34:02: Session FIX.4.2:ALGO-EXCHANGE->HSBC schedule is weekly, SUN 00:00:00-UTC - FRI 00:00:00-UTC
+20171128-09:34:02: Created session: FIX.4.2:ALGO-EXCHANGE->HSBC
+20171128-09:35:43: Session FIX.4.2:ALGO-EXCHANGE->HSBC schedule is weekly, SUN 00:00:00-UTC - FRI 00:00:00-UTC
+20171128-09:35:43: Created session: FIX.4.2:ALGO-EXCHANGE->HSBC
+20171128-09:36:20: Session FIX.4.2:ALGO-EXCHANGE->HSBC schedule is weekly, SUN 00:00:00-UTC - FRI 00:00:00-UTC
+20171128-09:36:20: Created session: FIX.4.2:ALGO-EXCHANGE->HSBC
+20171128-09:39:37: Session FIX.4.2:ALGO-EXCHANGE->HSBC schedule is weekly, SUN 00:00:00-UTC - FRI 00:00:00-UTC
+20171128-09:39:37: Created session: FIX.4.2:ALGO-EXCHANGE->HSBC
+20171128-09:47:55: Accepting session FIX.4.2:ALGO-EXCHANGE->HSBC from /127.0.0.1:26682
+20171128-09:47:55: Acceptor heartbeat set to 5 seconds
+20171128-09:47:55: Logon contains ResetSeqNumFlag=Y, resetting sequence numbers to 1
+20171128-09:47:55: Received logon
+20171128-09:47:55: Responding to Logon request
+20171128-11:45:54: Session FIX.4.2:ALGO-EXCHANGE->HSBC schedule is weekly, SUN 00:00:00-UTC - FRI 00:00:00-UTC
+20171128-11:45:54: Created session: FIX.4.2:ALGO-EXCHANGE->HSBC
+20171128-11:46:50: Session FIX.4.2:ALGO-EXCHANGE->HSBC schedule is weekly, SUN 00:00:00-UTC - FRI 00:00:00-UTC
+20171128-11:46:50: Created session: FIX.4.2:ALGO-EXCHANGE->HSBC
+20171128-11:48:03: Session FIX.4.2:ALGO-EXCHANGE->HSBC schedule is weekly, SUN 00:00:00-UTC - FRI 00:00:00-UTC
+20171128-11:48:03: Created session: FIX.4.2:ALGO-EXCHANGE->HSBC
+20171128-12:37:56: Session FIX.4.2:ALGO-EXCHANGE->HSBC schedule is weekly, SUN 00:00:00-UTC - FRI 00:00:00-UTC
+20171128-12:37:56: Created session: FIX.4.2:ALGO-EXCHANGE->HSBC
+20171128-12:39:25: Session FIX.4.2:ALGO-EXCHANGE->HSBC schedule is weekly, SUN 00:00:00-UTC - FRI 00:00:00-UTC
+20171128-12:39:25: Created session: FIX.4.2:ALGO-EXCHANGE->HSBC
+20171128-12:44:07: Accepting session FIX.4.2:ALGO-EXCHANGE->HSBC from /127.0.0.1:35316
+20171128-12:44:07: Acceptor heartbeat set to 5 seconds
+20171128-12:44:07: Logon contains ResetSeqNumFlag=Y, resetting sequence numbers to 1
+20171128-12:44:07: Received logon
+20171128-12:44:07: Responding to Logon request
+20171128-13:01:25: Session FIX.4.2:ALGO-EXCHANGE->HSBC schedule is weekly, SUN 00:00:00-UTC - FRI 00:00:00-UTC
+20171128-13:01:25: Created session: FIX.4.2:ALGO-EXCHANGE->HSBC
+20171128-13:04:29: Session FIX.4.2:ALGO-EXCHANGE->HSBC schedule is weekly, SUN 00:00:00-UTC - FRI 00:00:00-UTC
+20171128-13:04:29: Created session: FIX.4.2:ALGO-EXCHANGE->HSBC
+20171128-13:05:29: Session FIX.4.2:ALGO-EXCHANGE->HSBC schedule is weekly, SUN 00:00:00-UTC - FRI 00:00:00-UTC
+20171128-13:05:29: Created session: FIX.4.2:ALGO-EXCHANGE->HSBC
+20171128-13:07:01: Accepting session FIX.4.2:ALGO-EXCHANGE->HSBC from /127.0.0.1:35582
+20171128-13:07:01: Acceptor heartbeat set to 5 seconds
+20171128-13:07:01: Logon contains ResetSeqNumFlag=Y, resetting sequence numbers to 1
+20171128-13:07:01: Received logon
+20171128-13:07:01: Responding to Logon request
+20171128-13:07:30: Disconnecting: Socket exception (/127.0.0.1:35582): java.io.IOException: An existing connection was forcibly closed by the remote host
+20171128-13:07:38: Accepting session FIX.4.2:ALGO-EXCHANGE->HSBC from /127.0.0.1:35596
+20171128-13:07:38: Acceptor heartbeat set to 5 seconds
+20171128-13:07:38: Logon contains ResetSeqNumFlag=Y, resetting sequence numbers to 1
+20171128-13:07:38: Received logon
+20171128-13:07:38: Responding to Logon request
+20171128-13:09:04: Session FIX.4.2:ALGO-EXCHANGE->HSBC schedule is weekly, SUN 00:00:00-UTC - FRI 00:00:00-UTC
+20171128-13:09:04: Created session: FIX.4.2:ALGO-EXCHANGE->HSBC
+20171128-13:09:38: Accepting session FIX.4.2:ALGO-EXCHANGE->HSBC from /127.0.0.1:35666
+20171128-13:09:38: Acceptor heartbeat set to 5 seconds
+20171128-13:09:38: Logon contains ResetSeqNumFlag=Y, resetting sequence numbers to 1
+20171128-13:09:38: Received logon
+20171128-13:09:38: Responding to Logon request
+20171128-13:09:49: Session FIX.4.2:ALGO-EXCHANGE->HSBC schedule is weekly, SUN 00:00:00-UTC - FRI 00:00:00-UTC
+20171128-13:09:49: Created session: FIX.4.2:ALGO-EXCHANGE->HSBC
+20171128-13:10:30: Session FIX.4.2:ALGO-EXCHANGE->HSBC schedule is weekly, SUN 00:00:00-UTC - FRI 00:00:00-UTC
+20171128-13:10:30: Created session: FIX.4.2:ALGO-EXCHANGE->HSBC
+20171128-13:10:38: Accepting session FIX.4.2:ALGO-EXCHANGE->HSBC from /127.0.0.1:35744
+20171128-13:10:38: Acceptor heartbeat set to 5 seconds
+20171128-13:10:38: Logon contains ResetSeqNumFlag=Y, resetting sequence numbers to 1
+20171128-13:10:38: Received logon
+20171128-13:10:38: Responding to Logon request
+20171128-13:10:51: Disconnecting: Socket exception (/127.0.0.1:35744): java.io.IOException: An existing connection was forcibly closed by the remote host
+20171128-13:10:56: Accepting session FIX.4.2:ALGO-EXCHANGE->HSBC from /127.0.0.1:35758
+20171128-13:10:56: Acceptor heartbeat set to 5 seconds
+20171128-13:10:56: Logon contains ResetSeqNumFlag=Y, resetting sequence numbers to 1
+20171128-13:10:56: Received logon
+20171128-13:10:56: Responding to Logon request
+20171128-13:12:25: Session FIX.4.2:ALGO-EXCHANGE->HSBC schedule is weekly, SUN 00:00:00-UTC - FRI 00:00:00-UTC
+20171128-13:12:25: Created session: FIX.4.2:ALGO-EXCHANGE->HSBC
+20171128-13:12:33: Accepting session FIX.4.2:ALGO-EXCHANGE->HSBC from /127.0.0.1:35825
+20171128-13:12:33: Acceptor heartbeat set to 5 seconds
+20171128-13:12:33: Logon contains ResetSeqNumFlag=Y, resetting sequence numbers to 1
+20171128-13:12:33: Received logon
+20171128-13:12:33: Responding to Logon request
+20171128-13:16:32: Session FIX.4.2:ALGO-EXCHANGE->HSBC schedule is weekly, SUN 00:00:00-UTC - FRI 00:00:00-UTC
+20171128-13:16:32: Created session: FIX.4.2:ALGO-EXCHANGE->HSBC
+20171128-13:16:41: Accepting session FIX.4.2:ALGO-EXCHANGE->HSBC from /127.0.0.1:35902
+20171128-13:16:41: Acceptor heartbeat set to 5 seconds
+20171128-13:16:41: Logon contains ResetSeqNumFlag=Y, resetting sequence numbers to 1
+20171128-13:16:41: Received logon
+20171128-13:16:41: Responding to Logon request
+20171128-13:19:24: Session FIX.4.2:ALGO-EXCHANGE->HSBC schedule is weekly, SUN 00:00:00-UTC - FRI 00:00:00-UTC
+20171128-13:19:24: Created session: FIX.4.2:ALGO-EXCHANGE->HSBC
+20171128-13:19:30: Accepting session FIX.4.2:ALGO-EXCHANGE->HSBC from /127.0.0.1:35972
+20171128-13:19:30: Acceptor heartbeat set to 5 seconds
+20171128-13:19:30: Logon contains ResetSeqNumFlag=Y, resetting sequence numbers to 1
+20171128-13:19:30: Received logon
+20171128-13:19:30: Responding to Logon request
+20171128-13:30:59: Session FIX.4.2:ALGO-EXCHANGE->HSBC schedule is weekly, SUN 00:00:00-UTC - FRI 00:00:00-UTC
+20171128-13:30:59: Created session: FIX.4.2:ALGO-EXCHANGE->HSBC
+20171128-13:31:14: Accepting session FIX.4.2:ALGO-EXCHANGE->HSBC from /127.0.0.1:36118
+20171128-13:31:14: Acceptor heartbeat set to 5 seconds
+20171128-13:31:14: Logon contains ResetSeqNumFlag=Y, resetting sequence numbers to 1
+20171128-13:31:14: Received logon
+20171128-13:31:14: Responding to Logon request
+20171128-13:34:53: Session FIX.4.2:ALGO-EXCHANGE->HSBC schedule is weekly, SUN 00:00:00-UTC - FRI 00:00:00-UTC
+20171128-13:34:53: Created session: FIX.4.2:ALGO-EXCHANGE->HSBC
+20171129-06:50:20: Session FIX.4.2:ALGO-EXCHANGE->HSBC schedule is weekly, SUN 00:00:00-UTC - FRI 00:00:00-UTC
+20171129-06:50:20: Created session: FIX.4.2:ALGO-EXCHANGE->HSBC
+20171129-06:55:00: Session FIX.4.2:ALGO-EXCHANGE->HSBC schedule is weekly, SUN 00:00:00-UTC - FRI 00:00:00-UTC
+20171129-06:55:00: Created session: FIX.4.2:ALGO-EXCHANGE->HSBC
+20171129-07:00:59: Session FIX.4.2:ALGO-EXCHANGE->HSBC schedule is weekly, SUN 00:00:00-UTC - FRI 00:00:00-UTC
+20171129-07:00:59: Created session: FIX.4.2:ALGO-EXCHANGE->HSBC
+20171129-07:15:53: Session FIX.4.2:ALGO-EXCHANGE->HSBC schedule is weekly, SUN 00:00:00-UTC - FRI 00:00:00-UTC
+20171129-07:15:53: Created session: FIX.4.2:ALGO-EXCHANGE->HSBC
+20171129-07:19:03: Session FIX.4.2:ALGO-EXCHANGE->HSBC schedule is weekly, SUN 00:00:00-UTC - FRI 00:00:00-UTC
+20171129-07:19:03: Created session: FIX.4.2:ALGO-EXCHANGE->HSBC
+20171129-07:29:49: Session FIX.4.2:ALGO-EXCHANGE->HSBC schedule is weekly, SUN 00:00:00-UTC - FRI 00:00:00-UTC
+20171129-07:29:49: Created session: FIX.4.2:ALGO-EXCHANGE->HSBC
+20171129-07:31:59: Session FIX.4.2:ALGO-EXCHANGE->HSBC schedule is weekly, SUN 00:00:00-UTC - FRI 00:00:00-UTC
+20171129-07:31:59: Created session: FIX.4.2:ALGO-EXCHANGE->HSBC
+20171129-07:33:51: Session FIX.4.2:ALGO-EXCHANGE->HSBC schedule is weekly, SUN 00:00:00-UTC - FRI 00:00:00-UTC
+20171129-07:33:51: Created session: FIX.4.2:ALGO-EXCHANGE->HSBC
+20171129-07:34:46: Session FIX.4.2:ALGO-EXCHANGE->HSBC schedule is weekly, SUN 00:00:00-UTC - FRI 00:00:00-UTC
+20171129-07:34:46: Created session: FIX.4.2:ALGO-EXCHANGE->HSBC
+20171129-07:39:47: Session FIX.4.2:ALGO-EXCHANGE->HSBC schedule is weekly, SUN 00:00:00-UTC - FRI 00:00:00-UTC
+20171129-07:39:47: Created session: FIX.4.2:ALGO-EXCHANGE->HSBC
+20171129-07:42:42: Session FIX.4.2:ALGO-EXCHANGE->HSBC schedule is weekly, SUN 00:00:00-UTC - FRI 00:00:00-UTC
+20171129-07:42:42: Created session: FIX.4.2:ALGO-EXCHANGE->HSBC
+20171129-07:45:57: Session FIX.4.2:ALGO-EXCHANGE->HSBC schedule is weekly, SUN 00:00:00-UTC - FRI 00:00:00-UTC
+20171129-07:45:57: Created session: FIX.4.2:ALGO-EXCHANGE->HSBC
+20171129-07:47:47: Session FIX.4.2:ALGO-EXCHANGE->HSBC schedule is weekly, SUN 00:00:00-UTC - FRI 00:00:00-UTC
+20171129-07:47:47: Created session: FIX.4.2:ALGO-EXCHANGE->HSBC
+20171129-07:53:02: Session FIX.4.2:ALGO-EXCHANGE->HSBC schedule is weekly, SUN 00:00:00-UTC - FRI 00:00:00-UTC
+20171129-07:53:02: Created session: FIX.4.2:ALGO-EXCHANGE->HSBC
+20171129-07:54:49: Session FIX.4.2:ALGO-EXCHANGE->HSBC schedule is weekly, SUN 00:00:00-UTC - FRI 00:00:00-UTC
+20171129-07:54:49: Created session: FIX.4.2:ALGO-EXCHANGE->HSBC
+20171129-08:20:28: Session FIX.4.2:ALGO-EXCHANGE->HSBC schedule is weekly, SUN 00:00:00-UTC - FRI 00:00:00-UTC
+20171129-08:20:28: Created session: FIX.4.2:ALGO-EXCHANGE->HSBC
+20171129-08:21:59: Session FIX.4.2:ALGO-EXCHANGE->HSBC schedule is weekly, SUN 00:00:00-UTC - FRI 00:00:00-UTC
+20171129-08:21:59: Created session: FIX.4.2:ALGO-EXCHANGE->HSBC
+20171129-08:26:46: Session FIX.4.2:ALGO-EXCHANGE->HSBC schedule is weekly, SUN 00:00:00-UTC - FRI 00:00:00-UTC
+20171129-08:26:46: Created session: FIX.4.2:ALGO-EXCHANGE->HSBC
+20171129-08:30:03: Session FIX.4.2:ALGO-EXCHANGE->HSBC schedule is weekly, SUN 00:00:00-UTC - FRI 00:00:00-UTC
+20171129-08:30:03: Created session: FIX.4.2:ALGO-EXCHANGE->HSBC
+20171129-08:33:15: Session FIX.4.2:ALGO-EXCHANGE->HSBC schedule is weekly, SUN 00:00:00-UTC - FRI 00:00:00-UTC
+20171129-08:33:15: Created session: FIX.4.2:ALGO-EXCHANGE->HSBC
+20171129-08:33:50: Session FIX.4.2:ALGO-EXCHANGE->HSBC schedule is weekly, SUN 00:00:00-UTC - FRI 00:00:00-UTC
+20171129-08:33:50: Created session: FIX.4.2:ALGO-EXCHANGE->HSBC
+20171129-08:34:25: Session FIX.4.2:ALGO-EXCHANGE->HSBC schedule is weekly, SUN 00:00:00-UTC - FRI 00:00:00-UTC
+20171129-08:34:25: Created session: FIX.4.2:ALGO-EXCHANGE->HSBC
+20171129-08:36:50: Session FIX.4.2:ALGO-EXCHANGE->HSBC schedule is weekly, SUN 00:00:00-UTC - FRI 00:00:00-UTC
+20171129-08:36:50: Created session: FIX.4.2:ALGO-EXCHANGE->HSBC
+20171129-10:08:48: Session FIX.4.2:ALGO-EXCHANGE->HSBC schedule is weekly, SUN 00:00:00-UTC - FRI 00:00:00-UTC
+20171129-10:08:48: Created session: FIX.4.2:ALGO-EXCHANGE->HSBC
+20171129-10:13:53: Session FIX.4.2:ALGO-EXCHANGE->HSBC schedule is weekly, SUN 00:00:00-UTC - FRI 00:00:00-UTC
+20171129-10:13:53: Created session: FIX.4.2:ALGO-EXCHANGE->HSBC
+20171129-10:18:43: Session FIX.4.2:ALGO-EXCHANGE->HSBC schedule is weekly, SUN 00:00:00-UTC - FRI 00:00:00-UTC
+20171129-10:18:43: Created session: FIX.4.2:ALGO-EXCHANGE->HSBC
+20171129-10:35:01: Session FIX.4.2:ALGO-EXCHANGE->HSBC schedule is weekly, SUN 00:00:00-UTC - FRI 00:00:00-UTC
+20171129-10:35:01: Created session: FIX.4.2:ALGO-EXCHANGE->HSBC
+20171129-10:51:24: Accepting session FIX.4.2:ALGO-EXCHANGE->HSBC from /127.0.0.1:7918
+20171129-10:51:24: Acceptor heartbeat set to 5 seconds
+20171129-10:51:24: Logon contains ResetSeqNumFlag=Y, resetting sequence numbers to 1
+20171129-10:51:24: Received logon
+20171129-10:51:24: Responding to Logon request
+20171129-10:52:38: Disconnecting: Socket exception (/127.0.0.1:7918): java.io.IOException: An existing connection was forcibly closed by the remote host
+20171129-10:52:46: Accepting session FIX.4.2:ALGO-EXCHANGE->HSBC from /127.0.0.1:7964
+20171129-10:52:46: Acceptor heartbeat set to 5 seconds
+20171129-10:52:46: Logon contains ResetSeqNumFlag=Y, resetting sequence numbers to 1
+20171129-10:52:46: Received logon
+20171129-10:52:46: Responding to Logon request
+20171129-10:53:23: Disconnecting: Socket exception (/127.0.0.1:7964): java.io.IOException: An existing connection was forcibly closed by the remote host
+20171205-04:51:08: Session FIX.4.2:ALGO-EXCHANGE->HSBC schedule is weekly, SUN 00:00:00-UTC - FRI 00:00:00-UTC
+20171205-04:51:08: Session state is not current; resetting FIX.4.2:ALGO-EXCHANGE->HSBC
+20171205-04:51:08: Created session: FIX.4.2:ALGO-EXCHANGE->HSBC
+20171205-04:53:45: Accepting session FIX.4.2:ALGO-EXCHANGE->HSBC from /127.0.0.1:4261
+20171205-04:53:45: Acceptor heartbeat set to 5 seconds
+20171205-04:53:45: Logon contains ResetSeqNumFlag=Y, resetting sequence numbers to 1
+20171205-04:53:45: Received logon
+20171205-04:53:45: Responding to Logon request
+20171205-05:17:52: Session FIX.4.2:ALGO-EXCHANGE->HSBC schedule is weekly, SUN 00:00:00-UTC - FRI 00:00:00-UTC
+20171205-05:17:52: Created session: FIX.4.2:ALGO-EXCHANGE->HSBC
+20171205-05:19:54: Session FIX.4.2:ALGO-EXCHANGE->HSBC schedule is weekly, SUN 00:00:00-UTC - FRI 00:00:00-UTC
+20171205-05:19:54: Created session: FIX.4.2:ALGO-EXCHANGE->HSBC
+20171205-05:26:04: Accepting session FIX.4.2:ALGO-EXCHANGE->HSBC from /127.0.0.1:5847
+20171205-05:26:04: Acceptor heartbeat set to 5 seconds
+20171205-05:26:04: Logon contains ResetSeqNumFlag=Y, resetting sequence numbers to 1
+20171205-05:26:04: Received logon
+20171205-05:26:04: Responding to Logon request
+20171205-05:28:44: Session FIX.4.2:ALGO-EXCHANGE->HSBC schedule is weekly, SUN 00:00:00-UTC - FRI 00:00:00-UTC
+20171205-05:28:44: Created session: FIX.4.2:ALGO-EXCHANGE->HSBC
+20171205-05:34:25: Accepting session FIX.4.2:ALGO-EXCHANGE->HSBC from /127.0.0.1:6688
+20171205-05:34:25: Acceptor heartbeat set to 5 seconds
+20171205-05:34:25: Logon contains ResetSeqNumFlag=Y, resetting sequence numbers to 1
+20171205-05:34:25: Received logon
+20171205-05:34:25: Responding to Logon request
+20171205-06:03:12: Disconnecting: Timed out waiting for heartbeat
+20171205-06:03:12: Accepting session FIX.4.2:ALGO-EXCHANGE->HSBC from /127.0.0.1:9304
+20171205-06:03:12: Acceptor heartbeat set to 5 seconds
+20171205-06:03:12: Logon contains ResetSeqNumFlag=Y, resetting sequence numbers to 1
+20171205-06:03:12: Received logon
+20171205-06:03:12: Responding to Logon request
+20171205-06:22:33: Session FIX.4.2:ALGO-EXCHANGE->HSBC schedule is weekly, SUN 00:00:00-UTC - FRI 00:00:00-UTC
+20171205-06:22:33: Created session: FIX.4.2:ALGO-EXCHANGE->HSBC
+20171205-06:22:45: Accepting session FIX.4.2:ALGO-EXCHANGE->HSBC from /127.0.0.1:11309
+20171205-06:22:45: Acceptor heartbeat set to 5 seconds
+20171205-06:22:45: Logon contains ResetSeqNumFlag=Y, resetting sequence numbers to 1
+20171205-06:22:45: Received logon
+20171205-06:22:45: Responding to Logon request
+20171205-08:15:52: Session FIX.4.2:ALGO-EXCHANGE->HSBC schedule is weekly, SUN 00:00:00-UTC - FRI 00:00:00-UTC
+20171205-08:15:52: Created session: FIX.4.2:ALGO-EXCHANGE->HSBC
+20171205-08:41:39: Session FIX.4.2:ALGO-EXCHANGE->HSBC schedule is weekly, SUN 00:00:00-UTC - FRI 00:00:00-UTC
+20171205-08:41:39: Created session: FIX.4.2:ALGO-EXCHANGE->HSBC
+20171205-08:43:07: Session FIX.4.2:ALGO-EXCHANGE->HSBC schedule is weekly, SUN 00:00:00-UTC - FRI 00:00:00-UTC
+20171205-08:43:07: Created session: FIX.4.2:ALGO-EXCHANGE->HSBC
+20171205-08:43:40: Accepting session FIX.4.2:ALGO-EXCHANGE->HSBC from /127.0.0.1:13917
+20171205-08:43:40: Acceptor heartbeat set to 5 seconds
+20171205-08:43:40: Logon contains ResetSeqNumFlag=Y, resetting sequence numbers to 1
+20171205-08:43:40: Received logon
+20171205-08:43:40: Responding to Logon request
+20171205-08:48:26: Disconnecting: Socket exception (/127.0.0.1:13917): java.io.IOException: An existing connection was forcibly closed by the remote host
+20171206-06:32:54: Session FIX.4.2:ALGO-EXCHANGE->HSBC schedule is weekly, SUN 00:00:00-UTC - FRI 00:00:00-UTC
+20171206-06:32:54: Created session: FIX.4.2:ALGO-EXCHANGE->HSBC
+20171206-08:32:38: Session FIX.4.2:ALGO-EXCHANGE->HSBC schedule is weekly, SUN 00:00:00-UTC - FRI 00:00:00-UTC
+20171206-08:32:38: Created session: FIX.4.2:ALGO-EXCHANGE->HSBC
+20171206-11:58:08: Session FIX.4.2:ALGO-EXCHANGE->HSBC schedule is weekly, SUN 00:00:00-UTC - FRI 00:00:00-UTC
+20171206-11:58:08: Created session: FIX.4.2:ALGO-EXCHANGE->HSBC
+20171206-12:13:51: Session FIX.4.2:ALGO-EXCHANGE->HSBC schedule is weekly, SUN 00:00:00-UTC - FRI 00:00:00-UTC
+20171206-12:13:51: Created session: FIX.4.2:ALGO-EXCHANGE->HSBC
+20171206-12:25:38: Session FIX.4.2:ALGO-EXCHANGE->HSBC schedule is weekly, SUN 00:00:00-UTC - FRI 00:00:00-UTC
+20171206-12:25:38: Created session: FIX.4.2:ALGO-EXCHANGE->HSBC
+20171207-05:15:45: Session FIX.4.2:ALGO-EXCHANGE->HSBC schedule is weekly, SUN 00:00:00-UTC - FRI 00:00:00-UTC
+20171207-05:15:45: Created session: FIX.4.2:ALGO-EXCHANGE->HSBC
+20171207-16:58:33: Session FIX.4.2:ALGO-EXCHANGE->HSBC schedule is weekly, SUN 00:00:00-UTC - FRI 00:00:00-UTC
+20171207-16:58:33: Created session: FIX.4.2:ALGO-EXCHANGE->HSBC
+20171208-05:21:29: Session FIX.4.2:ALGO-EXCHANGE->HSBC schedule is weekly, SUN 00:00:00-UTC - FRI 00:00:00-UTC
+20171208-05:21:29: Session state is not current; resetting FIX.4.2:ALGO-EXCHANGE->HSBC
+20171208-05:21:29: Created session: FIX.4.2:ALGO-EXCHANGE->HSBC

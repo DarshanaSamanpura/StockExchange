@@ -1,5 +1,7 @@
 package com.dfn.exchange;
 
+import akka.actor.ActorRef;
+import akka.actor.Props;
 import akka.actor.UntypedActor;
 import com.dfn.exchange.beans.Quote;
 import com.google.gson.Gson;
@@ -22,7 +24,9 @@ public class FeedHandler extends UntypedActor {
     private static final Logger logger = LogManager.getLogger(FeedHandler.class);
     private final int port = 16500;
     private ServerSocket serverSocket = null;
-    private List<SocketHandler> socketList = new ArrayList<>();
+//    private List<SocketHandler> socketList = new ArrayList<>();
+    private ActorRef socketHandlerActor;
+    private ActorRef webSocketHandlerActor;
     Gson gson = new Gson();
 
     @Override
@@ -30,14 +34,20 @@ public class FeedHandler extends UntypedActor {
         super.preStart();
         System.out.println("Starting feed handler");
         System.out.println("Feed Hander Path " + getSelf().path());
-        Runnable r = () -> startServerSocket();
-        new Thread(r).start();
+        socketHandlerActor = getContext().actorOf(Props.create(SocketFeedHandler.class));
+        webSocketHandlerActor = getContext().actorOf(Props.create(WebSocketFeedHandler.class));
+
+       /* Runnable r = () -> startServerSocket();
+        new Thread(r).start();*/
     }
 
     @Override
     public void onReceive(Object message) throws Exception {
 
-        String stringMsg = "";
+        socketHandlerActor.tell(message, getSelf());
+        webSocketHandlerActor.tell(message, getSelf());
+
+        /*String stringMsg = "";
 
         if(message instanceof InMessageFix){
             InMessageFix inf = (InMessageFix) message;
@@ -51,12 +61,12 @@ public class FeedHandler extends UntypedActor {
             stringMsg = (String) message;
         }
 
-        sendMessage(stringMsg);
+        sendMessage(stringMsg);*/
 
     }
 
 
-    private void sendMessage(String message){
+   /* private void sendMessage(String message){
         if(message != null && !message.equals("")){
             write(message);
         }
@@ -157,6 +167,6 @@ public class FeedHandler extends UntypedActor {
 
 
     }
-
+*/
 
 }

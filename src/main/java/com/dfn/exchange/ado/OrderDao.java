@@ -45,7 +45,7 @@ public interface OrderDao {
     @Mapper(OrderEntityMapper.class)
     List<OrderEntity> getMatchingSellLimitOrders(@Bind("symbol") String symbol, @Bind("price") double price);
 
-    @SqlQuery("select * from orders where symbol = '1020' and ord_side = '1' and ord_type = '2' and order_status in (0,1) and price >= :price " +
+    @SqlQuery("select * from orders where symbol = :symbol and ord_side = '1' and ord_type = '2' and order_status in (0,1) and price >= :price " +
             "order by price desc, ord_time asc;")
     @Mapper(OrderEntityMapper.class)
     List<OrderEntity> getMatchingBuyLimitOrders(@Bind("symbol") String symbol, @Bind("price") double price);
