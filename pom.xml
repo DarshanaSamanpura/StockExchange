@@ -13,7 +13,17 @@
         <dropwizard.version>0.9.1</dropwizard.version>
         <log4j2.version>2.4.1</log4j2.version>
         <akka.version>2.4.1</akka.version>
+<<<<<<< HEAD
         <jetty.version>9.3.7.v20160115</jetty.version>
+=======
+		<JDK>1.8</JDK>
+		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+		<mvn.compiler.version>3.1</mvn.compiler.version>
+        <mvn.exec.version>1.2.1</mvn.exec.version>
+        <mvn.jar.version>2.4</mvn.jar.version>
+        <mvn.shade.version>1.6</mvn.shade.version>
+        <mvn.jersey.version>2.19</mvn.jersey.version>
+>>>>>>> 594d4d37c3d86cefed76a6d5df7784e21e2ba9d7
     </properties>
 
     <dependencies>
@@ -78,6 +88,8 @@
             <artifactId>backport-util-concurrent</artifactId>
             <version>3.0</version>
         </dependency>
+
+        <!--
         <dependency>
             <groupId>quickfixj-all-1.5.3</groupId>
             <artifactId>quickfixj-all-1.5.3</artifactId>
@@ -122,6 +134,8 @@
             <version>1.6.3</version>
             <scope>test</scope>
         </dependency>
+        -->
+
         <!--
         <dependency>
             <groupId>org.slf4j</groupId>
@@ -138,12 +152,27 @@
             <scope>test</scope>
         </dependency>
 
+<<<<<<< HEAD
         <!-- Netty WS Dependency-->
         <dependency>
             <groupId>io.netty</groupId>
             <artifactId>netty-all</artifactId>
             <version>4.1.0.CR7</version>
         </dependency>
+=======
+        <!-- https://mvnrepository.com/artifact/org.quickfixj/quickfixj-all -->
+        <dependency>
+            <groupId>org.quickfixj</groupId>
+            <artifactId>quickfixj-all</artifactId>
+            <version>1.6.2</version>
+        </dependency>
+
+
+
+
+
+
+>>>>>>> 594d4d37c3d86cefed76a6d5df7784e21e2ba9d7
     </dependencies>
 
     <build>
@@ -151,19 +180,75 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
-                <version>3.1</version>
+                <version>${mvn.compiler.version}</version>
                 <configuration>
-                    <source>1.8</source>
-                    <target>1.8</target>
-                    <encoding>UTF-8</encoding>
+                    <source>${JDK}</source>
+                    <target>${JDK}</target>
+                    <encoding>${project.build.sourceEncoding}</encoding>
                 </configuration>
             </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-idea-plugin</artifactId>
                 <configuration>
-                    <jdkName>1.8</jdkName>
-                    <jdkLevel>1.8</jdkLevel>
+                    <jdkName>${JDK}</jdkName>
+                    <jdkLevel>8</jdkLevel>
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-jar-plugin</artifactId>
+                <version>${mvn.jar.version}</version>
+                <configuration>
+                    <archive>
+                        <manifest>
+                            <addDefaultImplementationEntries>true</addDefaultImplementationEntries>
+                        </manifest>
+                    </archive>
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-shade-plugin</artifactId>
+                <version>${mvn.shade.version}</version>
+                <configuration>
+                    <createDependencyReducedPom>true</createDependencyReducedPom>
+                    <filters>
+                        <filter>
+                            <artifact>*:*</artifact>
+                            <excludes>
+                                <exclude>META-INF/*.SF</exclude>
+                                <exclude>META-INF/*.DSA</exclude>
+                                <exclude>META-INF/*.RSA</exclude>
+                            </excludes>
+                        </filter>
+                    </filters>
+                </configuration>
+                <executions>
+                    <execution>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>shade</goal>
+                        </goals>
+                        <configuration>
+                            <transformers>
+                                <transformer
+                                        implementation="org.apache.maven.plugins.shade.resource.ServicesResourceTransformer"/>
+                                <transformer
+                                        implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
+                                    <mainClass>com.dfn.exchange.StartExchange</mainClass>
+                                </transformer>
+                            </transformers>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>exec-maven-plugin</artifactId>
+                <version>${mvn.exec.version}</version>
+                <configuration>
+                    <mainClass>com.dfn.exchange.StartExchange</mainClass>                    
                 </configuration>
             </plugin>
         </plugins>

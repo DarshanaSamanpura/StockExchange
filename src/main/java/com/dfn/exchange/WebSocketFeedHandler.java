@@ -173,7 +173,7 @@ public class WebSocketFeedHandler extends UntypedActor {
                     Message symbolMetaResponse = new Message();
                     responseHeader.setMessageGroup(102);
                     symbolMetaResponse.setHeader(responseHeader);
-                    symbolMetaResponse.setData(SymbolSettings.getSymbolList());
+                    symbolMetaResponse.setData(Settings.getSymbolList());
                     channelHandlerContext.channel().writeAndFlush(new TextWebSocketFrame(gson.toJson(symbolMetaResponse)));
                     break;
 
