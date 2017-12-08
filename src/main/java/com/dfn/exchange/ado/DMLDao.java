@@ -7,7 +7,7 @@ import org.skife.jdbi.v2.sqlobject.SqlUpdate;
  */
 public interface DMLDao {
 
-    @SqlUpdate("create table IF NOT EXISTS orders(order_id VARCHAR(255) PRIMARY KEY, trader_id VARCHAR(200), symbol VARCHAR(50), qty DECIMAL(12,3), price DECIMAL(12,3),\n" +
+    @SqlUpdate("create table IF NOT EXISTS orders(order_id VARCHAR(255) PRIMARY KEY, trader_id VARCHAR(200), acc_number varchar(255), symbol VARCHAR(50), qty DECIMAL(12,3), price DECIMAL(12,3),\n" +
             "        ord_type CHAR(1), ord_side CHAR(1), tif CHAR(1), ord_time BIGINT, order_status CHAR(1), executed_qty DECIMAL(12,3), remaining_qty DECIMAL(12,3),\n" +
             "        is_filled BOOLEAN DEFAULT FALSE)")
     void createTableOrders();
@@ -35,5 +35,13 @@ public interface DMLDao {
     @SqlUpdate("create table if not EXISTS FIX_STORE(mid bigint auto_increment primary key,\n" +
             "        timestmp DATETIME not null, msg_side int, fix_message TEXT)")
     void createFixStore();
+
+    @SqlUpdate("create table if not EXISTS customer(nic varchar(250) primary key, first_name varchar(255),\n" +
+            "    middle_name varchar(255), last_name varchar(255), acc_number varchar(255))")
+    void createTableCustomer();
+
+    @SqlUpdate("create table if not EXISTS holdings(acc_number varchar(255), symbol varchar(50), \n" +
+            "    balance DECIMAL(12,3), primary key(acc_number,symbol))")
+    void createTableAccount();
 
 }

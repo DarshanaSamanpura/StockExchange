@@ -1,6 +1,9 @@
 package com.dfn.exchange;
 
+import com.dfn.exchange.beans.Customer;
+import com.dfn.exchange.beans.Holding;
 import com.dfn.exchange.beans.Symbol;
+import com.dfn.exchange.beans.SymbolList;
 import com.google.gson.Gson;
 
 import java.util.ArrayList;
@@ -10,7 +13,7 @@ import java.util.List;
 /**
  * Created by darshanas on 11/13/2017.
  */
-public class SymbolSettings {
+public class Settings {
 
     private static Gson gson = new Gson();
     private static String symbolJson = null;
@@ -67,9 +70,58 @@ public class SymbolSettings {
 
     public static String getSymbolString(){
         if(symbolJson == null){
-            symbolJson = gson.toJson(getSymbolList());
+            SymbolList symbolList = new SymbolList();
+            symbolList.setMessageType('S');
+            symbolList.setSymbolList(getSymbolList());
+            symbolJson = gson.toJson(symbolList);
         }
         return symbolJson;
+    }
+
+    public static List<Customer> getCustomerList(){
+        List<Customer> list = new ArrayList<>();
+
+        Customer darshana = new Customer("793440170V","Darshana","Nayanapriya","Samanpura","793440170V");
+        darshana.setHoldings(Arrays.asList(new Holding[]{
+                new Holding("793440170V","1010",150000),
+                new Holding("793440170V","1020",150000),
+                new Holding("793440170V","1030",25000),
+                new Holding("793440170V","1040",785200),
+                new Holding("793440170V","1050",150000)
+        }));
+        list.add(darshana);
+
+        Customer j = new Customer("825540852V","Janaka","S","Rathnayake","825540852V");
+        j.setHoldings(Arrays.asList(new Holding[]{
+                new Holding("825540852V", "1010", 150000),
+                new Holding("825540852V", "1020", 150000),
+                new Holding("825540852V", "1030", 25000),
+                new Holding("825540852V", "1040", 785200),
+                new Holding("825540852V", "1050", 150000)
+        }));
+        list.add(j);
+
+        Customer r = new Customer("751259482V","Ruwan","Prasana","Aluthgedara","751259482V");
+        r.setHoldings(Arrays.asList(new Holding[]{
+                new Holding("751259482V", "1010", 150000),
+                new Holding("751259482V", "1020", 150000),
+                new Holding("751259482V", "1030", 25000),
+                new Holding("751259482V", "1040", 785200),
+                new Holding("751259482V", "1050", 150000)
+        }));
+        list.add(r);
+
+        Customer m = new Customer("852263125V","Manodya",null,"Samaraweera","852263125V");
+        m.setHoldings(Arrays.asList(new Holding[]{
+                new Holding("852263125V", "1010", 150000),
+                new Holding("852263125V", "1020", 150000),
+                new Holding("852263125V", "1030", 25000),
+                new Holding("852263125V", "1040", 785200),
+                new Holding("852263125V", "1050", 150000)
+        }));
+        list.add(m);
+
+        return list;
     }
     
 }

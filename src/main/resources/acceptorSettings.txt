@@ -12,7 +12,23 @@ BeginString=FIX.4.2
 SenderCompID=ALGO-EXCHANGE
 TargetCompID=HSBC
 StartDay=sunday
-EndDay=friday
+EndDay=saturday
+StartTime=00:00:00
+EndTime=00:00:00
+CheckLatency=N
+SocketAcceptPort=12000
+UseDataDictionary=Y
+DataDictionary=./FIX42.xml
+FileStorePath=./Server_Seq_Store
+
+[SESSION] #A single session
+BeginString=FIX.4.2
+#SenderCompID=MY-ACCEPTOR-SERVICE
+#TargetCompID=MY-INITIATOR-CLIENT1
+SenderCompID=ALGO-EXCHANGE
+TargetCompID=AUTO-TRADER
+StartDay=sunday
+EndDay=saturday
 StartTime=00:00:00
 EndTime=00:00:00
 CheckLatency=N

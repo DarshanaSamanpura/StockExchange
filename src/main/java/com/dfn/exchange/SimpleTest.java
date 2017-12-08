@@ -16,6 +16,7 @@ import java.util.List;
 public class SimpleTest {
 
     public static void main(String[] args) {
+<<<<<<< HEAD
        /* Gson gson = new Gson();
         List<OrderBookRaw> orderBookRawList = new ArrayList<>();
         OrderBookRaw raw1 = new OrderBookRaw(1,"10:30:00",90,100,"10:30:00",90.60,90);
@@ -40,6 +41,18 @@ public class SimpleTest {
 
         System.out.println("Symbol Meta :" + gson.toJson(symbolMetaRequest));
 
+=======
+        Gson gson = new Gson();
+//        List<OrderBookRaw> orderBookRawList = new ArrayList<>();
+//        OrderBookRaw raw1 = new OrderBookRaw(1,"10:30:00",90,100,"10:30:00",90.60,90);
+//        OrderBookRaw raw2 = new OrderBookRaw(1,"10:31:00",90,100,"10:31:00",90.60,90);
+//        orderBookRawList.add(raw1);
+//        orderBookRawList.add(raw2);
+//        OrderBook orderBook = new OrderBook(orderBookRawList);
+//        orderBook.setMessageType('B');
+//        String ss = gson.toJson(orderBook);
+//        System.out.println(ss);
+>>>>>>> 9dc86a85b6d349931ea19b4f5f013b2120b5bba5
     }
 
 }

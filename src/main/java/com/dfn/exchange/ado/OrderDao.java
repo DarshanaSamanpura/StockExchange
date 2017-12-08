@@ -1,5 +1,6 @@
 package com.dfn.exchange.ado;
 
+import com.dfn.exchange.beans.MarketVolume;
 import com.dfn.exchange.beans.OrderEntity;
 import org.skife.jdbi.v2.sqlobject.Bind;
 import org.skife.jdbi.v2.sqlobject.SqlQuery;
@@ -17,10 +18,11 @@ import java.util.List;
  */
 public interface OrderDao {
 
-    @SqlUpdate("insert into orders(order_id, trader_id, symbol, qty, price, ord_type, ord_side, tif, ord_time, order_status," +
-            "executed_qty, remaining_qty) values (:order_id,:trader_id,:symbol,:qty,:price,:ord_type,:ord_side,:tif," +
+    @SqlUpdate("insert into orders(order_id, trader_id, acc_number, symbol, qty, price, ord_type, ord_side, tif, ord_time, order_status," +
+            "executed_qty, remaining_qty) values (:order_id,:trader_id,:acc_number,:symbol,:qty,:price,:ord_type,:ord_side,:tif," +
             ":ord_time,:order_status,:executed_qty,:remaining_qty)")
     void createOrder(@Bind("order_id") String ordId, @Bind("trader_id") String traderId, @Bind("symbol") String symbol,
+                     @Bind("acc_number") String accNumber,
                      @Bind("qty") double qty, @Bind("price") double price, @Bind("ord_type") char ordType,
                      @Bind("ord_side") char ordSide, @Bind("tif") char tif, @Bind("ord_time") long ordTime,
                      @Bind("order_status") char ordStatus, @Bind("executed_qty") double executedQty,
@@ -90,5 +92,10 @@ public interface OrderDao {
     @SqlUpdate("update orders set qty = :qty,price = :price, remaining_qty= :remQty, ord_Type= :ordType, ord_side= :ordSide  where order_id = :orderId")
     void updateOrder(@Bind("orderId") String orderId,@Bind("qty") double qty, @Bind("remQty") double remQty, @Bind("price") double price, @Bind("ordType") String ordType, @Bind("ordSide") String ordSide);
 
+    @SqlQuery("select sum(remaining_qty) as mkt_vol, sum(executed_qty) as ex_qty from orders where symbol = :symbol")
+    @Mapper(MarketVolumeMapper.class)
+    MarketVolume getMarketVolume(@Bind("symbol") String symbol);
 
+    @SqlUpdate("update orders set order_status = '8' where order_id = :order_id")
+    void updateOrderStatus(@Bind("order_id") String ordId);
 }

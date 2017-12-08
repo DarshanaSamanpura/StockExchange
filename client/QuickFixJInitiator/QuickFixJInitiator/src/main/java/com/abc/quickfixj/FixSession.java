@@ -77,6 +77,7 @@ public class FixSession {
         fixOrd.set(new TimeInForce(order.getTif()));
         fixOrd.set(new OrderQty(order.getQty()));
         fixOrd.set(new Price(order.getPrice()));
+        fixOrd.set(new Account(order.getTradingAcc()));
         try {
             Session.sendToTarget(fixOrd,sessionId);
         } catch (SessionNotFound sessionNotFound) {

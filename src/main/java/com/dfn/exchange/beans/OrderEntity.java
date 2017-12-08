@@ -20,6 +20,7 @@ public class OrderEntity {
     private double executedQty;
     private double remainingQty;
     private boolean isFilled;
+    private String accountNumber;
 
     public String getOrderId() {
         return orderId;
@@ -123,5 +124,13 @@ public class OrderEntity {
 
     public void setIsFilled(boolean isFilled) {
         this.isFilled = isFilled;
+    }
+
+    public String getAccountNumber() {
+        return accountNumber;
+    }
+
+    public void setAccountNumber(String accountNumber) {
+        this.accountNumber = accountNumber;
     }
 }

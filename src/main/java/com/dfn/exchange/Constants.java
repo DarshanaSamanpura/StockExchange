@@ -9,13 +9,8 @@ import java.util.List;
  */
 public class Constants {
 
-    public static List<String> getSymbols(){
-        return Arrays.asList(new String[]{"1010","1020","1030"});
-    }
-
-     public static final String DB = "mysql";
-  //  public static final String DB = "h2";
-
+//    public static final String DB = "mysql";
+   public static final String DB = "h2";
     public static final int FIX_MSG_IN = 1;
     public static final int FIX_MSG_OUT = 2;
 

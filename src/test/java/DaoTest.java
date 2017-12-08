@@ -43,7 +43,7 @@ public class DaoTest {
         dmlDao.createTableTradeInfo();
         dmlDao.createTableTradeMatch();
         OrderDao orderDao = dbi.onDemand(OrderDao.class);
-        orderDao.createOrder("1000", "1", "1010", 55, 45.63, '1', '2', '1', System.currentTimeMillis(), OrdStatus.NEW, 0, 0);
+        orderDao.createOrder("1000", "1", "1010", "5555555",55, 45.63, '1', '2', '1', System.currentTimeMillis(), OrdStatus.NEW, 0, 0);
         List<NewOrderSingle> list = orderDao.getAllOrders();
         assertEquals(1, list.size());
         NewOrderSingle order = list.get(0);
@@ -101,7 +101,7 @@ public class DaoTest {
                 }
             }
 
-            orderDao.createOrder(Integer.toString(counter),"TEST","1010",50,getRandomPrice(min,max),OrdType.LIMIT, side, TimeInForce.DAY,
+            orderDao.createOrder(Integer.toString(counter),"TEST","1010","5555555",50,getRandomPrice(min,max),OrdType.LIMIT, side, TimeInForce.DAY,
                     System.nanoTime(),OrdStatus.NEW,0,50);
             counter++;
         }
