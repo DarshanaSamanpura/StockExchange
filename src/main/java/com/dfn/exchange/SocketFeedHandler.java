@@ -19,7 +19,7 @@ import java.util.List;
  * Created by manodyas on 11/28/2017.
  */
 public class SocketFeedHandler extends UntypedActor {
-    private final int port = 16500;
+    private final int port = 16501;
     private ServerSocket serverSocket = null;
     private List<SocketHandler> socketList = new ArrayList<>();
     private static final Logger logger = LogManager.getLogger(SocketFeedHandler.class);

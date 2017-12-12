@@ -1,12 +1,9 @@
 package com.dfn.exchange.beans.WSUtil;
 
-import com.google.gson.annotations.SerializedName;
-
 /**
- * Created by manodyas on 12/12/2017.
+ * Created by manodyas on 12/11/2017.
  */
-public class SymbolSubscriptionRequest {
-    @SerializedName("symbolCode")
+public class Symbol {
     private String symbolCode;
 
     public String getSymbolCode() {

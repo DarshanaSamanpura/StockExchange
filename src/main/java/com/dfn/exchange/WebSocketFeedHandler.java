@@ -2,9 +2,11 @@ package com.dfn.exchange;
 
 import akka.actor.UntypedActor;
 import com.dfn.exchange.beans.Quote;
+import com.dfn.exchange.beans.Symbol;
 import com.dfn.exchange.beans.WSUtil.Header;
 import com.dfn.exchange.beans.WSUtil.LoginResponse;
 import com.dfn.exchange.beans.WSUtil.Message;
+import com.dfn.exchange.beans.WSUtil.SymbolSubscriptionRequest;
 import com.google.gson.Gson;
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.channel.*;
@@ -23,13 +25,16 @@ import quickfix.fix42.NewOrderSingle;
 
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Created by manodyas on 11/28/2017.
  */
 public class WebSocketFeedHandler extends UntypedActor {
-    private static List<ChannelHandlerContext> webSocket = new ArrayList<>();
+    private static List<ChannelHandlerContext> webSocketList = new ArrayList<>();
+    private static Map<ChannelHandlerContext, String> symbolSubscriptionMap = new HashMap<>();
     private static final Logger logger = LogManager.getLogger(WebSocketFeedHandler.class);
     Gson gson = new Gson();
     private static String WS_PATH = "/websocket";
@@ -38,9 +43,7 @@ public class WebSocketFeedHandler extends UntypedActor {
     @Override
     public void preStart() throws Exception {
         super.preStart();
-        System.out.println("WS Feed Handler Path " + getSelf().path());
-        start();
-
+        start(); // start ws with actor preStart
     }
 
     @Override
@@ -63,14 +66,14 @@ public class WebSocketFeedHandler extends UntypedActor {
     }
 
     private void sendMessage(String message) {
-        System.out.println("Writing Message to WS EndPoints " + message);
+        logger.info("Writing Message to WS EndPoints:" + message);
         if (message != null && !message.equals("")) {
             write(message);
         }
     }
 
     private void write(String message) {
-        webSocket.forEach(s -> {
+        webSocketList.forEach(s -> {
             s.channel().writeAndFlush(new TextWebSocketFrame(message));
         });
     }
@@ -88,8 +91,7 @@ public class WebSocketFeedHandler extends UntypedActor {
     }
 
     public void addWebSocket(ChannelHandlerContext context) {
-        webSocket.add(context);
-
+        webSocketList.add(context);
     }
 
 
@@ -114,7 +116,7 @@ public class WebSocketFeedHandler extends UntypedActor {
 
             final Channel ch = sb.bind(WS_PORT).sync().channel();
 
-            System.out.println("Web socket server started at port  :" + WS_PORT);
+            logger.info("Web socket server started, Port" + WS_PORT + " , Resource Path" + WS_PATH);
             //ch.closeFuture().sync();
         } catch (InterruptedException e) {
             e.printStackTrace();
@@ -129,7 +131,6 @@ public class WebSocketFeedHandler extends UntypedActor {
         public WebSocketFrameHandler() {
 
         }
-
 
         @Override
         public void channelRead0(ChannelHandlerContext channelHandlerContext, WebSocketFrame frame) throws Exception {
@@ -147,7 +148,7 @@ public class WebSocketFeedHandler extends UntypedActor {
 
         @Override
         public void channelRegistered(ChannelHandlerContext ctx) throws Exception {
-            System.out.println("New client connected.");
+            logger.info("New client connected." + ctx.toString());
 
         }
 
@@ -176,14 +177,14 @@ public class WebSocketFeedHandler extends UntypedActor {
                     symbolMetaResponse.setData(Settings.getSymbolList());
                     channelHandlerContext.channel().writeAndFlush(new TextWebSocketFrame(gson.toJson(symbolMetaResponse)));
                     break;
-
+                case 3: // subscribe to a symbol
+                    String jsonString = gson.toJson(requestMessage.getData(), Map.class);
+                    SymbolSubscriptionRequest symbolSubscription = gson.fromJson(jsonString, SymbolSubscriptionRequest.class);
+                    logger.info("##Symbol Subscription Request Received :" + symbolSubscription.getSymbolCode());
+                    symbolSubscriptionMap.put(channelHandlerContext, symbolSubscription.getSymbolCode());
 
             }
         }
-
-
-
-
     }
 
 }
