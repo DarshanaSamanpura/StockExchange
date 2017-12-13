@@ -8,7 +8,7 @@ import java.util.Date;
  */
 public class TimeUtils {
 
-    private static SimpleDateFormat dateFormat = new SimpleDateFormat("HHmmss");
+    private static SimpleDateFormat dateFormat = new SimpleDateFormat("HH:mm:ss");
 
     public static String getTimeString(){
         return dateFormat.format(new Date());

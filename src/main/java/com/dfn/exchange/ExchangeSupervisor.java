@@ -5,6 +5,10 @@ import akka.actor.Props;
 import akka.actor.UntypedActor;
 import com.dfn.exchange.ado.DataService;
 import com.dfn.exchange.ado.OrderDao;
+import com.dfn.exchange.beans.StatusMessage;
+import com.dfn.exchange.beans.StatusReq;
+import com.dfn.exchange.registry.StateRegistry;
+import com.dfn.exchange.registry.SymbolRegistry;
 import quickfix.FieldNotFound;
 import quickfix.SessionID;
 import quickfix.field.*;
@@ -42,6 +46,7 @@ public class ExchangeSupervisor extends UntypedActor {
             ActorRef ref = getContext().actorOf(Props.create(SymbolActor.class,symbol.getSymbolCode(),tradeHandler,feedHandler),
                     symbol.getSymbolCode());
             symbolActorMap.put(symbol.getSymbolCode(),ref);
+            SymbolRegistry.addToMap(symbol.getSymbolCode(),ref);
         });
         tradeHelper = getContext().actorOf(Props.create(TradeHelper.class));
         feedHelper = getContext().actorOf(Props.create(FeedHelper.class));
@@ -87,7 +92,19 @@ public class ExchangeSupervisor extends UntypedActor {
                     rejectAmendOrder(amendOrderRequest, getSender(), inf.getSessionID());
                 }
             }
+        }else if(message instanceof StatusReq){
+            getSender().tell(getStatus(),getSelf());
         }
+    }
+
+
+    private StatusMessage getStatus(){
+        StatusMessage message = new StatusMessage();
+        message.setMarketStatus(StateRegistry.getMarketState());
+        message.setMatchCount(StateRegistry.matchCount);
+        message.setOrderCount(StateRegistry.newOrdCount);
+        message.setMarketVolumes(StateRegistry.getAllMarketVolumes());
+        return message;
     }
 
     private void acceptOrder(NewOrderSingle order, ActorRef fix, SessionID sessionID) throws FieldNotFound {

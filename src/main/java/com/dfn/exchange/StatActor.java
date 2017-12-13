@@ -51,6 +51,7 @@ public class StatActor extends UntypedActor {
                 matchTimes.forEach(i -> builder.append(i+","));
                 fileWriter.write(builder.toString());
                 fileWriter.flush();
+                matchTimes.clear();
             }
         }
 

@@ -6,6 +6,7 @@ package com.dfn.exchange.beans;
 public class TradeMatch extends DfnMessage{
 
 
+    private String symbol;
     private String id;
     private double qty;
     private double price;
@@ -18,13 +19,14 @@ public class TradeMatch extends DfnMessage{
     }
 
     public TradeMatch(String id, double qty, double price, String time,
-                      String buyOrdId,String sellOrdId) {
+                      String buyOrdId,String sellOrdId,String symbol) {
         this.id = id;
         this.qty = qty;
         this.price = price;
         this.time = time;
         this.buyOrdId = buyOrdId;
         this.sellOrdId = sellOrdId;
+        this.symbol = symbol;
         setMessageType('8');
     }
 
@@ -74,5 +76,13 @@ public class TradeMatch extends DfnMessage{
 
     public void setSellOrdId(String sellOrdId) {
         this.sellOrdId = sellOrdId;
+    }
+
+    public String getSymbol() {
+        return symbol;
+    }
+
+    public void setSymbol(String symbol) {
+        this.symbol = symbol;
     }
 }

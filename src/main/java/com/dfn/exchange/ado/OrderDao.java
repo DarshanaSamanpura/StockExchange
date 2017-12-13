@@ -1,6 +1,7 @@
 package com.dfn.exchange.ado;
 
 import com.dfn.exchange.beans.MarketVolume;
+import com.dfn.exchange.beans.OpenQty;
 import com.dfn.exchange.beans.OrderEntity;
 import org.skife.jdbi.v2.sqlobject.Bind;
 import org.skife.jdbi.v2.sqlobject.SqlQuery;
@@ -28,26 +29,41 @@ public interface OrderDao {
                      @Bind("order_status") char ordStatus, @Bind("executed_qty") double executedQty,
                      @Bind("remaining_qty") double remQty);
 
+    @SqlUpdate("insert into completed_orders(order_id, trader_id, acc_number, symbol, qty, price, ord_type, ord_side, tif, ord_time, order_status," +
+            "executed_qty, remaining_qty) values (:order_id,:trader_id,:acc_number,:symbol,:qty,:price,:ord_type,:ord_side,:tif," +
+            ":ord_time,:order_status,:executed_qty,:remaining_qty)")
+    void completedOrders(@Bind("order_id") String ordId, @Bind("trader_id") String traderId, @Bind("symbol") String symbol,
+                     @Bind("acc_number") String accNumber,
+                     @Bind("qty") double qty, @Bind("price") double price, @Bind("ord_type") char ordType,
+                     @Bind("ord_side") char ordSide, @Bind("tif") char tif, @Bind("ord_time") long ordTime,
+                     @Bind("order_status") char ordStatus, @Bind("executed_qty") double executedQty,
+                     @Bind("remaining_qty") double remQty);
+
+    @SqlUpdate("insert into completed_orders(select * from orders where order_id = :order_id)")
+    void fillOrCloseOrder(@Bind("order_id") String orderId);
+
     @SqlQuery("select * from orders")
     @Mapper(OrderMapper.class)
     List<NewOrderSingle> getAllOrders();
 
-    @SqlQuery("select * from orders where symbol = :symbol and ord_side = '1' and ord_type = '2' and order_status in (0,1) " +
-            "order by price desc, ord_time asc")
+//    @SqlQuery("select * from orders where symbol = :symbol and ord_side = '1' and ord_type = '2' and order_status in (0,1) " +
+//            "order by price desc, ord_time asc")
+    @SqlQuery("select * from orders where symbol = :symbol and ord_side = '1' and ord_type = '2' " +
+        "order by price desc, ord_time asc")
     @Mapper(OrderEntityMapper.class)
     List<OrderEntity> getBuyLimitOrders(@Bind("symbol") String symbol);
 
-    @SqlQuery("select * from orders where symbol = :symbol and ord_side = '2' and ord_type = '2' and order_status in (0,1) " +
+    @SqlQuery("select * from orders where symbol = :symbol and ord_side = '2' and ord_type = '2' " +
             "order by price, ord_time")
     @Mapper(OrderEntityMapper.class)
     List<OrderEntity> getSellLimitOrders(@Bind("symbol") String symbol);
 
-    @SqlQuery("select * from orders where symbol = :symbol and ord_side = '2' and ord_type = '2' and order_status in (0,1) and  price <= :price " +
+    @SqlQuery("select * from orders where symbol = :symbol and ord_side = '2' and ord_type = '2' and  price <= :price " +
             "order by price, ord_time")
     @Mapper(OrderEntityMapper.class)
     List<OrderEntity> getMatchingSellLimitOrders(@Bind("symbol") String symbol, @Bind("price") double price);
 
-    @SqlQuery("select * from orders where symbol = :symbol and ord_side = '1' and ord_type = '2' and order_status in (0,1) and price >= :price " +
+    @SqlQuery("select * from orders where symbol = :symbol and ord_side = '1' and ord_type = '2' and price >= :price " +
             "order by price desc, ord_time asc;")
     @Mapper(OrderEntityMapper.class)
     List<OrderEntity> getMatchingBuyLimitOrders(@Bind("symbol") String symbol, @Bind("price") double price);
@@ -98,4 +114,13 @@ public interface OrderDao {
 
     @SqlUpdate("update orders set order_status = '8' where order_id = :order_id")
     void updateOrderStatus(@Bind("order_id") String ordId);
+
+    @SqlQuery("select symbol, sum(remaining_qty) as open_vol from orders where ord_side = :ord_side group by symbol")
+    @Mapper(OpenQtyMapper.class)
+    List<OpenQty> getOpenVolume(@Bind("ord_side") String ord_side);
+
+    @SqlQuery("select symbol, ord_side, sum(remaining_qty) as open_vol from orders group by symbol")
+    @Mapper(OpenQtyMapper.class)
+    List<OpenQty> getOpenVolumeAll();
+
 }

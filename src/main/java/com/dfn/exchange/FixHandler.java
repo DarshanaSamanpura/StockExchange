@@ -1,8 +1,11 @@
 package com.dfn.exchange;
 
+import akka.actor.ActorRef;
 import akka.actor.UntypedActor;
 import com.dfn.exchange.ado.DataService;
 import com.dfn.exchange.ado.FixServiceDao;
+import com.dfn.exchange.registry.StateRegistry;
+import com.dfn.exchange.registry.SymbolRegistry;
 import org.apache.log4j.LogManager;
 import org.apache.log4j.Logger;
 import quickfix.*;
@@ -93,15 +96,19 @@ public class FixHandler extends UntypedActor {
         }
 
         public void onMessage(quickfix.fix42.NewOrderSingle order, SessionID sessionID) throws FieldNotFound, UnsupportedMessageType, IncorrectTagValue {
-            System.out.println("###NewOrder Received:" + order.toString());
-            System.out.println("###Symbol" + order.getSymbol().toString());
-            System.out.println("###Side" + order.getSide().toString());
-            System.out.println("###Type" + order.getOrdType().toString());
-            System.out.println("###TransactioTime" + order.getTransactTime().toString());
+//            System.out.println("###NewOrder Received:" + order.toString());
+//            System.out.println("###Symbol" + order.getSymbol().toString());
+//            System.out.println("###Side" + order.getSide().toString());
+//            System.out.println("###Type" + order.getOrdType().toString());
+//            System.out.println("###TransactioTime" + order.getTransactTime().toString());
             //sendMessageToClient(order, sessionID);
-            System.out.println(order.toString());
+            //System.out.println(order.toString());
+            StateRegistry.newOrdCount++;
             InMessageFix inMessageFix = new InMessageFix(order,sessionID);
-            getContext().parent().tell(inMessageFix, getSelf());
+            ActorRef ref = SymbolRegistry.getSymbolActor(order.getSymbol().getValue());
+            if(ref != null)
+                ref.tell(inMessageFix,null);
+                //getContext().parent().tell(inMessageFix, getSelf());
 
         }
 
@@ -122,7 +129,7 @@ public class FixHandler extends UntypedActor {
         @Override
         public void fromApp(Message message, SessionID sessionID) throws FieldNotFound, IncorrectDataFormat, IncorrectTagValue, UnsupportedMessageType {
             try {
-                fixServiceDao.addToFixStore(Constants.FIX_MSG_IN,message.toString());
+                //fixServiceDao.addToFixStore(Constants.FIX_MSG_IN,message.toString());
                 crack(message, sessionID);
             } catch (UnsupportedMessageType unsupportedMessageType) {
                 unsupportedMessageType.printStackTrace();
@@ -141,7 +148,7 @@ public class FixHandler extends UntypedActor {
             try {
                 fixLogger.info("Sending execution message");
                 Session.sendToTarget(outMessageFix.getFixMessage(), outMessageFix.getSessionID());
-                fixServiceDao.addToFixStore(Constants.FIX_MSG_OUT,outMessageFix.getFixMessage().toString());
+                //fixServiceDao.addToFixStore(Constants.FIX_MSG_OUT,outMessageFix.getFixMessage().toString());
             } catch (SessionNotFound sessionNotFound) {
                 sessionNotFound.printStackTrace();
             }

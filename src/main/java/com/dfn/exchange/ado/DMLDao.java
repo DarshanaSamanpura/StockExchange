@@ -7,6 +7,11 @@ import org.skife.jdbi.v2.sqlobject.SqlUpdate;
  */
 public interface DMLDao {
 
+    @SqlUpdate("create table IF NOT EXISTS completed_orders(order_id VARCHAR(255) PRIMARY KEY, trader_id VARCHAR(200), acc_number varchar(255), symbol VARCHAR(50), qty DECIMAL(12,3), price DECIMAL(12,3),\n" +
+            "        ord_type CHAR(1), ord_side CHAR(1), tif CHAR(1), ord_time BIGINT, order_status CHAR(1), executed_qty DECIMAL(12,3), remaining_qty DECIMAL(12,3),\n" +
+            "        is_filled BOOLEAN DEFAULT FALSE)")
+    void createTableCompletedOrders();
+
     @SqlUpdate("create table IF NOT EXISTS orders(order_id VARCHAR(255) PRIMARY KEY, trader_id VARCHAR(200), acc_number varchar(255), symbol VARCHAR(50), qty DECIMAL(12,3), price DECIMAL(12,3),\n" +
             "        ord_type CHAR(1), ord_side CHAR(1), tif CHAR(1), ord_time BIGINT, order_status CHAR(1), executed_qty DECIMAL(12,3), remaining_qty DECIMAL(12,3),\n" +
             "        is_filled BOOLEAN DEFAULT FALSE)")

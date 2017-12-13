@@ -69,6 +69,7 @@ public class SymbolActor extends UntypedActor {
         if (message instanceof InMessageFix) {
             InMessageFix input = (InMessageFix) message;
             if (input.getFixMessage() instanceof NewOrderSingle) {
+                feedHandler.tell(message,getSelf());
                 orderEntryTime = System.currentTimeMillis();
                 NewOrderSingle newOrder = (NewOrderSingle) input.getFixMessage();
                 saveOrder(newOrder, input.getSessionID().getTargetCompID());
@@ -240,7 +241,7 @@ public class SymbolActor extends UntypedActor {
             double executedPrice = newOrder.getPrice() <= counterOrder.getPrice() ? newOrder.getPrice(): counterOrder.getPrice();
             lastTradePrice = executedPrice;
             feedHandler.tell(new TradeMatch(executionIdNewOrder, newOrder.getRemainingQty(),
-                    executedPrice, TimeUtils.getTimeString(), buyOrderId,sellOrderId), getSelf());
+                    executedPrice, TimeUtils.getTimeString(), buyOrderId,sellOrderId,symbolName), getSelf());
 
 //            orderDao.updateTradeMatch(executionIdNewOrder, newOrder.getRemainingQty(),
 //                    executedPrice, sellOrderId, buyOrderId); // todo need change executionIdNewOrder to transactionID
@@ -280,7 +281,7 @@ public class SymbolActor extends UntypedActor {
             double executedPrice = newOrder.getPrice() <= counterOrder.getPrice() ? newOrder.getPrice(): counterOrder.getPrice();
             lastTradePrice = executedPrice;
             feedHandler.tell(new TradeMatch(executionIdNewOrder,newOrder.getRemainingQty(),
-                    executedPrice, TimeUtils.getTimeString(),buyOrderId,sellOrderId), getSelf());
+                    executedPrice, TimeUtils.getTimeString(),buyOrderId,sellOrderId,symbolName), getSelf());
 
 //            orderDao.updateTradeMatch(executionIdNewOrder, counterOrder.getRemainingQty(),
 //                    executedPrice, sellOrderId, buyOrderId); //todo need change executionIdNewOrder to transactionID
@@ -320,7 +321,7 @@ public class SymbolActor extends UntypedActor {
             double executedPrice = newOrder.getPrice() <= counterOrder.getPrice() ? newOrder.getPrice(): counterOrder.getPrice();
             lastTradePrice = executedPrice;
             feedHandler.tell(new TradeMatch(executionIdNewOrder,newOrder.getRemainingQty(),
-                    executedPrice, TimeUtils.getTimeString(),buyOrderId,sellOrderId), getSelf());
+                    executedPrice, TimeUtils.getTimeString(),buyOrderId,sellOrderId,symbolName), getSelf());
 
 //            orderDao.updateTradeMatch(executionIdNewOrder, newOrder.getRemainingQty(),
 //                    executedPrice, sellOrderId, buyOrderId);  //todo need change executionIdNewOrder to transactionID
@@ -442,7 +443,7 @@ public class SymbolActor extends UntypedActor {
                 x.setPrice(entity.getPrice());
                 fillOrder(x, executionId);
                 feedHandler.tell(new TradeMatch(executionId, orderQty,
-                        entity.getPrice(), TimeUtils.getTimeString(), x.getOrderId(), entity.getOrderId()), getSelf());
+                        entity.getPrice(), TimeUtils.getTimeString(), x.getOrderId(), entity.getOrderId(),symbolName), getSelf());
                 //orderDao.updateTradeMatch(executionId, orderQty, entity.getPrice(), entity.getOrderId(), x.getOrderId());
                 lastTradePrice = entity.getPrice();
                 executedVol = executedVol + orderQty;
@@ -465,7 +466,7 @@ public class SymbolActor extends UntypedActor {
                 entity.setRemainingQty(entity.getQty() - entity.getExecutedQty());
                 partialFillOrder(entity, executionId);
                 feedHandler.tell(new TradeMatch(executionId, remainingQty,
-                        entity.getPrice(), TimeUtils.getTimeString(), mktOrdEntity.getOrderId(), entity.getOrderId()), getSelf());
+                        entity.getPrice(), TimeUtils.getTimeString(), mktOrdEntity.getOrderId(), entity.getOrderId(),symbolName), getSelf());
                 //orderDao.updateTradeMatch(executionId, remainingQty, entity.getPrice(), entity.getOrderId(), mktOrdEntity.getOrderId());
                 lastTradePrice = entity.getPrice();
                 executedVol = executedVol + remainingQty;
@@ -488,7 +489,7 @@ public class SymbolActor extends UntypedActor {
                 partialFillOrder(mktOrdEntry, executionId);
                 fillOrder(entity, executionId);
                 feedHandler.tell(new TradeMatch(executionId, entity.getRemainingQty(),
-                        entity.getPrice(), TimeUtils.getTimeString(), mktOrdEntry.getOrderId(), entity.getOrderId()), getSelf());
+                        entity.getPrice(), TimeUtils.getTimeString(), mktOrdEntry.getOrderId(), entity.getOrderId(),symbolName), getSelf());
                 //orderDao.updateTradeMatch(executionId, entity.getRemainingQty(), entity.getPrice(), entity.getOrderId(), mktOrdEntry.getOrderId());
                 lastTradePrice = entity.getPrice();
                 executedVol = executedVol + entity.getRemainingQty();
@@ -524,7 +525,7 @@ public class SymbolActor extends UntypedActor {
                 x.setPrice(entity.getPrice());
                 fillOrder(x, executionId);
                 feedHandler.tell(new TradeMatch(executionId, orderQty,
-                        entity.getPrice(), TimeUtils.getTimeString(), entity.getOrderId(), x.getOrderId()), getSelf());
+                        entity.getPrice(), TimeUtils.getTimeString(), entity.getOrderId(), x.getOrderId(),symbolName), getSelf());
                 //orderDao.updateTradeMatch(executionId, orderQty, entity.getPrice(), x.getOrderId(), entity.getOrderId());
                 lastTradePrice = entity.getPrice();
                 executedVol = executedVol + orderQty;
@@ -546,7 +547,7 @@ public class SymbolActor extends UntypedActor {
                 entity.setRemainingQty(entity.getQty() - entity.getExecutedQty());
                 partialFillOrder(entity, executionId);
                 feedHandler.tell(new TradeMatch(executionId, remainingQty,
-                        entity.getPrice(), TimeUtils.getTimeString(), entity.getOrderId(), mktOrdEntity.getOrderId()), getSelf());
+                        entity.getPrice(), TimeUtils.getTimeString(), entity.getOrderId(), mktOrdEntity.getOrderId(),symbolName), getSelf());
                 //orderDao.updateTradeMatch(executionId, remainingQty, entity.getPrice(), entity.getOrderId(), mktOrdEntity.getOrderId());
                 lastTradePrice = entity.getPrice();
                 executedVol = executedVol + remainingQty;
@@ -570,7 +571,7 @@ public class SymbolActor extends UntypedActor {
                 partialFillOrder(mktOrdEntry, executionId);
                 fillOrder(entity, executionId);
                 feedHandler.tell(new TradeMatch(executionId, entity.getRemainingQty(),
-                        entity.getPrice(), TimeUtils.getTimeString(), entity.getOrderId(), mktOrdEntry.getOrderId()), getSelf());
+                        entity.getPrice(), TimeUtils.getTimeString(), entity.getOrderId(), mktOrdEntry.getOrderId(),symbolName), getSelf());
                 //orderDao.updateTradeMatch(executionId, entity.getRemainingQty(), entity.getPrice(), entity.getOrderId(), mktOrdEntry.getOrderId());
                 lastTradePrice = entity.getPrice();
                 executedVol = executedVol + entity.getRemainingQty();
@@ -612,6 +613,7 @@ public class SymbolActor extends UntypedActor {
         OutMessageFix outMessageFix = new OutMessageFix(report, sessionID);
         fixHandler.tell(outMessageFix, getSelf());
         orderSessions.remove(orderEntity.getOrderId());
+        persistCompletedOrder(orderEntity.getOrderId());
     }
 
     public void partialFillOrder(OrderEntity order, String executionId) {
@@ -671,8 +673,8 @@ public class SymbolActor extends UntypedActor {
         OrderBook orderBook = new OrderBook(orderBookRaws);
         orderBook.setMessageType('B');
         orderBook.setSymbol(this.symbolName);
-        String json = gson.toJson(orderBook);
-        feedHandler.tell(json, getSelf());
+        //String json = gson.toJson(orderBook);
+        feedHandler.tell(orderBook, getSelf());
 
 
     }
@@ -710,6 +712,12 @@ public class SymbolActor extends UntypedActor {
         SessionID sessionID = orderSessions.get(order.getClOrdID().getValue());
         OutMessageFix outMessageFix = new OutMessageFix(report, sessionID);
         fixHandler.tell(outMessageFix, getSelf());
+        persistCompletedOrder(orderEntity.getOrderId());
+    }
+
+    private void persistCompletedOrder(String ordId){
+        orderDao.fillOrCloseOrder(ordId);
+        orderDao.deleteOrder(ordId);
     }
 
     private ExecutionReport getExecutionReport(OrderEntity order, char ordStatus, String executionId) {
