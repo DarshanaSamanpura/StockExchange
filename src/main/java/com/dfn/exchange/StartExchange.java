@@ -15,7 +15,7 @@ import java.util.List;
  */
 public class StartExchange {
 
-    public static void main(String[] args) {
+    public static void main(String[] args) throws Exception {
         System.out.println("Starting the actor system");
         DataService ds = DataService.getInstance(Constants.DB);
         DMLDao dmlDao = ds.getDbi().onDemand(DMLDao.class);

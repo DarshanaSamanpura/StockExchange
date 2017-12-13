@@ -1,6 +1,7 @@
 package com.dfn.exchange;
 
 import akka.actor.ActorRef;
+import akka.actor.Props;
 import akka.actor.UntypedActor;
 import akka.pattern.Patterns;
 import akka.util.Timeout;
@@ -30,10 +31,13 @@ import java.util.Map;
 public class FeedHandler extends UntypedActor {
 
     private static final Logger logger = LogManager.getLogger(FeedHandler.class);
+
     private final int port = 16500;
     private ServerSocket serverSocket = null;
     private List<SocketHandler> socketList = new ArrayList<>();
     private Map<Integer,SocketHandler> sockMap = new HashMap<>();
+    private ActorRef socketHandlerActor;
+    private ActorRef webSocketHandlerActor;
     Gson gson = new Gson();
     private final String exchangePath = "akka://stockExchange/user/ExchangeSupervisor";
     private ActorRef exchangeActor = null;
@@ -46,10 +50,15 @@ public class FeedHandler extends UntypedActor {
         System.out.println("Feed Hander Path " + getSelf().path());
         Runnable r = () -> startServerSocket();
         new Thread(r).start();
+        logger.info("Starting feed handler");
+        logger.info("Feed Hander Path " + getSelf().path());
+        socketHandlerActor = getContext().actorOf(Props.create(SocketFeedHandler.class));
+        webSocketHandlerActor = getContext().actorOf(Props.create(WebSocketFeedHandler.class));
     }
 
     @Override
     public void onReceive(Object message) throws Exception {
+
 
         String stringMsg = "";
 
@@ -202,6 +211,13 @@ public class FeedHandler extends UntypedActor {
 
 
     }
+
+
+//        socketHandlerActor.tell(message, getSelf());
+//        webSocketHandlerActor.tell(message, getSelf());
+    
+
+
 
 
 }
