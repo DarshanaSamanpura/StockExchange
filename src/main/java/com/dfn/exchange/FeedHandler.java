@@ -1,21 +1,28 @@
 package com.dfn.exchange;
 
+import akka.actor.ActorRef;
 import akka.actor.UntypedActor;
-import com.dfn.exchange.beans.MarketVolume;
-import com.dfn.exchange.beans.Quote;
-import com.dfn.exchange.beans.TradeMatch;
+import akka.pattern.Patterns;
+import akka.util.Timeout;
+import com.dfn.exchange.beans.*;
+import com.dfn.exchange.registry.StateRegistry;
 import com.google.gson.Gson;
 import org.apache.log4j.LogManager;
 import org.apache.log4j.Logger;
 import quickfix.FieldNotFound;
 import quickfix.field.Price;
 import quickfix.fix42.NewOrderSingle;
+import scala.concurrent.Await;
+import scala.concurrent.Future;
+import scala.concurrent.duration.Duration;
 
 import java.io.*;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Created by darshanas on 11/2/2017.
@@ -26,11 +33,15 @@ public class FeedHandler extends UntypedActor {
     private final int port = 16500;
     private ServerSocket serverSocket = null;
     private List<SocketHandler> socketList = new ArrayList<>();
+    private Map<Integer,SocketHandler> sockMap = new HashMap<>();
     Gson gson = new Gson();
+    private final String exchangePath = "akka://stockExchange/user/ExchangeSupervisor";
+    private ActorRef exchangeActor = null;
 
     @Override
     public void preStart() throws Exception {
         super.preStart();
+        exchangeActor = getContext().actorFor(exchangePath);
         System.out.println("Starting feed handler");
         System.out.println("Feed Hander Path " + getSelf().path());
         Runnable r = () -> startServerSocket();
@@ -53,8 +64,15 @@ public class FeedHandler extends UntypedActor {
         }else if(message instanceof String){
             stringMsg = (String) message;
         }else if(message instanceof TradeMatch){
+            StateRegistry.matchCount++;
             stringMsg = gson.toJson(message);
         }else if(message instanceof MarketVolume){
+            MarketVolume vol = (MarketVolume)message;
+            StateRegistry.putMarketVolumeState(vol.getSymbol(),vol);
+            stringMsg = gson.toJson(message);
+        }else if(message instanceof OrderBook){
+            OrderBook ob = (OrderBook) message;
+            StateRegistry.addOrderBookSnapShot(ob.getSymbol(),ob);
             stringMsg = gson.toJson(message);
         }
 
@@ -87,11 +105,15 @@ public class FeedHandler extends UntypedActor {
 
         try {
             serverSocket = new ServerSocket(port);
+//            int socktId = 1;
             while (true) {
 
                 logger.info("Listening to connections");
                 final Socket activeSocket = serverSocket.accept();
-                socketList.add(new SocketHandler(activeSocket));
+                SocketHandler h = new SocketHandler(activeSocket);
+                socketList.add(h);
+//                sockMap.put(socktId, h);
+//                socktId++;
 
             }
 
@@ -108,6 +130,7 @@ public class FeedHandler extends UntypedActor {
         socketList.forEach(s -> {
             s.write(message);
         });
+
     }
 
 
@@ -117,6 +140,8 @@ public class FeedHandler extends UntypedActor {
         BufferedReader socketReader = null;
         BufferedWriter socketWriter = null;
         Thread readerThred;
+        private boolean isActive = true;
+
 
         public SocketHandler(Socket socket){
 
@@ -130,6 +155,15 @@ public class FeedHandler extends UntypedActor {
                 readerThred = new Thread(r);
                 //sending initial symbol details response.
                 write(Settings.getSymbolString());
+                Timeout timeout = new Timeout(Duration.create(2, "seconds"));
+                Future<Object> future = Patterns.ask(exchangeActor, new StatusReq(), timeout);
+                try {
+                    StatusMessage statusMessage = (StatusMessage) Await.result(future, timeout.duration());
+                    if(statusMessage != null)
+                        write(gson.toJson(statusMessage));
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
             } catch (IOException e) {
                 e.printStackTrace();
             }
@@ -137,13 +171,16 @@ public class FeedHandler extends UntypedActor {
         }
 
         public void write(String message)  {
+
             try {
-                socketWriter.write(message);
-                socketWriter.write("\n");
-                socketWriter.flush();
+                if(isActive){
+                    socketWriter.write(message);
+                    socketWriter.write("\n");
+                    socketWriter.flush();
+                }
             } catch (IOException e) {
                 System.out.println("Removing client from store");
-                //clientStore.remove(key);
+                isActive = false;
             }
         }
 

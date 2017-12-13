@@ -20,6 +20,7 @@ public class StartExchange {
         DataService ds = DataService.getInstance(Constants.DB);
         DMLDao dmlDao = ds.getDbi().onDemand(DMLDao.class);
         dmlDao.createTableOrders();
+        dmlDao.createTableCompletedOrders();
         dmlDao.createTableTradeInfo();
         dmlDao.createTableTradeMatch();
         dmlDao.createTableOrderExecutions();
