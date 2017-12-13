@@ -1,12 +1,12 @@
 package com.dfn.exchange;
 
 import akka.actor.UntypedActor;
-import com.dfn.exchange.beans.Quote;
-import com.dfn.exchange.beans.Symbol;
+import com.dfn.exchange.beans.*;
 import com.dfn.exchange.beans.WSUtil.Header;
 import com.dfn.exchange.beans.WSUtil.LoginResponse;
 import com.dfn.exchange.beans.WSUtil.Message;
 import com.dfn.exchange.beans.WSUtil.SymbolSubscriptionRequest;
+import com.dfn.exchange.registry.StateRegistry;
 import com.google.gson.Gson;
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.channel.*;
@@ -21,6 +21,7 @@ import io.netty.handler.codec.http.websocketx.WebSocketServerProtocolHandler;
 import org.apache.log4j.LogManager;
 import org.apache.log4j.Logger;
 import quickfix.FieldNotFound;
+import quickfix.field.Price;
 import quickfix.fix42.NewOrderSingle;
 
 import java.io.Serializable;
@@ -33,6 +34,7 @@ import java.util.Map;
  * Created by manodyas on 11/28/2017.
  */
 public class WebSocketFeedHandler extends UntypedActor {
+
     private static List<ChannelHandlerContext> webSocketList = new ArrayList<>();
     private static Map<ChannelHandlerContext, String> symbolSubscriptionMap = new HashMap<>();
     private static final Logger logger = LogManager.getLogger(WebSocketFeedHandler.class);
@@ -48,21 +50,29 @@ public class WebSocketFeedHandler extends UntypedActor {
 
     @Override
     public void onReceive(Object message) throws Exception {
+
         String stringMsg = "";
 
-        if (message instanceof InMessageFix) {
+        if(message instanceof InMessageFix){
             InMessageFix inf = (InMessageFix) message;
 
-            if (inf.getFixMessage() instanceof NewOrderSingle) {
+            if(inf.getFixMessage() instanceof NewOrderSingle){
                 NewOrderSingle order = (NewOrderSingle) inf.getFixMessage();
                 stringMsg = gson.toJson(getQuote(order));
             }
 
-        } else if (message instanceof String) {
+        }else if(message instanceof String){
             stringMsg = (String) message;
+        }else if(message instanceof TradeMatch){
+            stringMsg = gson.toJson(message);
+        }else if(message instanceof MarketVolume){
+            stringMsg = gson.toJson(message);
+        }else if(message instanceof OrderBook){
+            stringMsg = gson.toJson(message);
         }
 
         sendMessage(stringMsg);
+
     }
 
     private void sendMessage(String message) {
@@ -80,7 +90,8 @@ public class WebSocketFeedHandler extends UntypedActor {
 
     private Quote getQuote(NewOrderSingle order) throws FieldNotFound {
         Quote quote = new Quote();
-        quote.setPrice(order.getPrice().getValue());
+        if(order.isSet(new Price()))
+            quote.setPrice(order.getPrice().getValue());
         quote.setQty(order.getOrderQty().getValue());
         quote.setSide(order.getSide().getValue());
         quote.setSymbol(order.getSymbol().getValue());

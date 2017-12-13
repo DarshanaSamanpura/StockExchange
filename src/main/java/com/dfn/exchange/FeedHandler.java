@@ -59,33 +59,18 @@ public class FeedHandler extends UntypedActor {
     @Override
     public void onReceive(Object message) throws Exception {
 
+        socketHandlerActor.tell(message,getSelf());
+        webSocketHandlerActor.tell(message,getSelf());
 
-        String stringMsg = "";
-
-        if(message instanceof InMessageFix){
-            InMessageFix inf = (InMessageFix) message;
-
-            if(inf.getFixMessage() instanceof NewOrderSingle){
-                NewOrderSingle order = (NewOrderSingle) inf.getFixMessage();
-                stringMsg = gson.toJson(getQuote(order));
-            }
-
-        }else if(message instanceof String){
-            stringMsg = (String) message;
-        }else if(message instanceof TradeMatch){
+        if(message instanceof TradeMatch){
             StateRegistry.matchCount++;
-            stringMsg = gson.toJson(message);
         }else if(message instanceof MarketVolume){
             MarketVolume vol = (MarketVolume)message;
             StateRegistry.putMarketVolumeState(vol.getSymbol(),vol);
-            stringMsg = gson.toJson(message);
         }else if(message instanceof OrderBook){
             OrderBook ob = (OrderBook) message;
             StateRegistry.addOrderBookSnapShot(ob.getSymbol(),ob);
-            stringMsg = gson.toJson(message);
         }
-
-        sendMessage(stringMsg);
 
     }
 
@@ -215,7 +200,7 @@ public class FeedHandler extends UntypedActor {
 
 //        socketHandlerActor.tell(message, getSelf());
 //        webSocketHandlerActor.tell(message, getSelf());
-    
+
 
 
 
